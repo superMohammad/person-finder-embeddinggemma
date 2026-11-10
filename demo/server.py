@@ -48,10 +48,6 @@ PAGES: dict[str, tuple[Path, str]] = {           # route -> (file, content type)
     "/docs/Person_Finder_Explained.pdf": (PROJECT_ROOT / "docs" / "Person_Finder_Explained.pdf", "application/pdf"),
 }
 DIAGRAM_DIR: Path = PROJECT_ROOT / "docs" / "diagrams"
-MALL_FIGURES: dict[str, Path] = {           # route name -> file, for /figures/<name>
-    "mall_detection.png": PROJECT_ROOT / "outputs" / "mall" / "results_detection.png",
-    "mall_grounding.png": PROJECT_ROOT / "outputs" / "mall" / "grounding_examples.png",
-}
 QUERY_PROMPT: str = "SearchQuery"
 TOP_K: int = 5
 GALLERIES: tuple[str, ...] = ("test", "all")
@@ -240,10 +236,9 @@ def make_handler(model: SentenceTransformer, model_name: str, index: Index, rng:
             self._send_json(HTTPStatus.OK, asdict(result))
 
         def _send_figure(self, name: str) -> None:
-            """GET /figures/<name>: a rendered diagram from docs/diagrams or a Mall result plot, nothing else."""
-            diagrams = {p.name: p for p in DIAGRAM_DIR.glob("fig*.png")}
-            file = diagrams.get(name) or MALL_FIGURES.get(name)
-            if file is None or not file.is_file():
+            """GET /figures/<name>: a rendered diagram from docs/diagrams, nothing else."""
+            file = {p.name: p for p in DIAGRAM_DIR.glob("fig*.png")}.get(name)
+            if file is None:
                 self._send_json(HTTPStatus.NOT_FOUND, {"error": f"unknown figure {name!r}"})
                 return
             self._send(HTTPStatus.OK, "image/png", file.read_bytes())

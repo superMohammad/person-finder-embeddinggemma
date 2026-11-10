@@ -29,31 +29,6 @@ One embedding model, [EmbeddingGemma-2](https://huggingface.co/google/embeddingg
 
 <p align="center"><img src="docs/diagrams/fig1_overview.png" alt="Figure 1: (a) training with contrastive alignment, (b) text-driven person search in live video" width="100%"></p>
 
-## How it works, in six figures
-
-Every person image and score in these figures is a real model output.
-
-<details>
-<summary><b>Figure 2 · Search: encode the gallery once, then one product and a sort per query; how it is graded</b></summary>
-<br><img src="docs/diagrams/fig2_retrieval.png" alt="Figure 2">
-</details>
-<details>
-<summary><b>Figure 3 · Training details: unique-person batches, cached loss, Matryoshka sizes</b></summary>
-<br><img src="docs/diagrams/fig3_training.png" alt="Figure 3">
-</details>
-<details>
-<summary><b>Figure 4 · Live video: re-encode every 10 frames, smooth, then two gates</b></summary>
-<br><img src="docs/diagrams/fig4_video.png" alt="Figure 4">
-</details>
-<details>
-<summary><b>Figure 5 · Mall crowd: matching person boxes to 62,315 labelled heads</b></summary>
-<br><img src="docs/diagrams/fig5_mall.png" alt="Figure 5">
-</details>
-<details>
-<summary><b>Figure 6 · Results</b></summary>
-<br><img src="docs/diagrams/fig6_results.png" alt="Figure 6">
-</details>
-
 **New to the topic?** [**Person_Finder_Explained.pdf**](docs/Person_Finder_Explained.pdf) walks through the whole project from A to Z in plain words. For every step it explains what was done, when, and why, with a glossary at the end.
 
 ## Run it
@@ -91,7 +66,7 @@ The video demo also runs on its own, in a desktop window or on a webcam (`--sour
 | `tbpr.py` | shared data loading and metrics: Rank-k, mAP and mINP on the GPU, plus Mall head matching |
 | `TBPR_ex.ipynb` → `TBPR_finetune.ipynb` → `TBPR_mall.ipynb` | the three experiments, in the order they were run |
 | `demo/` | standard-library web server, search and video pages, and the YOLO + ByteTrack + EmbeddingGemma tracker |
-| `docs/diagrams/` | the paper-style figures, generated as SVG by `build_figures.py` and rendered to PNG by `render.py` |
+| `docs/diagrams/` | the method figure, generated as SVG by `build_figures.py` and rendered to PNG by `render.py` |
 | `docs/explainer/` | the source of the PDF walkthrough |
 | `promo/` | the Remotion project behind the GIF |
 | `outputs/` | result tables and plots (embeddings and weights are not committed) |

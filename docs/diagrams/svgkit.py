@@ -101,12 +101,6 @@ def curve(x1: float, y1: float, x2: float, y2: float, bend: float) -> str:
             f'stroke-width="2.6" marker-end="url(#ah)"/>')
 
 
-def poly(points: list[tuple[float, float]], dashed: bool) -> str:
-    d = " ".join(f"{px},{py}" for px, py in points)
-    dash = ' stroke-dasharray="7 6"' if dashed else ""
-    return f'<polyline points="{d}" fill="none" stroke="{ARROW}" stroke-width="2.4"{dash} marker-end="url(#ah)"/>'
-
-
 def vector(x: float, y: float, p: Palette, cols: int, rows: int, seed: int, cell: float) -> str:
     """A few embedding vectors drawn as columns of shaded cells (deterministic pseudo-random shades)."""
     out: list[str] = []

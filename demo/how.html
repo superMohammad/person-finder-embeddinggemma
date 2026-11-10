@@ -44,13 +44,13 @@
   </div>
 </header>
 <div class="ticker"><div class="wrap">
-  <span>6 figures</span><span>every number from the notebooks</span><span>all images are real model outputs</span>
+  <span>every number from the notebooks</span><span>all images are real model outputs</span>
 </div></div>
 
 <main><div class="wrap">
-  <div class="eyebrow">Method · six figures</div>
+  <div class="eyebrow">Method · one figure, six steps</div>
   <h1 class="display">One model, <i>two uses,</i> one green box.</h1>
-  <p class="standfirst">The whole project in six figures, from the dataset to a live mall camera. Each step says what was done, and why it was done that way.</p>
+  <p class="standfirst">The whole project in one figure and six short steps, from the dataset to a live mall camera. Each step says what was done, and why it was done that way.</p>
 
   <div class="cols">
     <nav class="toc" aria-label="Contents">
@@ -74,36 +74,27 @@
         <div class="step"><div><div class="no">02</div><h2>Search is one product and a sort.</h2></div>
           <p>Gallery photos are encoded once and cached. A query is encoded in milliseconds and scored against every photo with one matrix–vector product. Grades are averaged over 2,000 test queries on 200 people the model never saw.</p></div>
         <div class="why"><div><b>When</b>Photos are encoded once; queries are encoded live.</div><div><b>Why cache</b>Encoding 20,505 photos takes about 15 minutes, while one sentence takes milliseconds.</div><div><b>Why several grades</b>Rank-1 checks the first guess, and mAP and mINP check all of that person's photos.</div></div>
-        <figure><a href="/figures/fig2_retrieval.png"><img src="/figures/fig2_retrieval.png" alt="Figure 2: retrieval and evaluation" loading="lazy"></a><figcaption><span>Figure 2 · retrieval and evaluation</span><span>open full size ↗</span></figcaption></figure>
       </section>
 
       <section id="training">
         <div class="step"><div><div class="no">03</div><h2>Three training details that matter.</h2></div>
           <p>Batches never hold the same person twice, so a correct match is never punished. A cached loss gives 128 negatives at the memory cost of 16. Matryoshka training keeps a 256-number vector almost as good as the full 768.</p></div>
         <div class="why"><div><b>When</b>After the zero-shot baseline was measured.</div><div><b>Why lr 2e-5</b>Small steps learn this task without forgetting everything else.</div><div><b>Why 3 epochs</b>Validation stopped improving after the first one.</div></div>
-        <figure><a href="/figures/fig3_training.png"><img src="/figures/fig3_training.png" alt="Figure 3: training details" loading="lazy"></a><figcaption><span>Figure 3 · sampler, cached loss, Matryoshka</span><span>open full size ↗</span></figcaption></figure>
       </section>
 
       <section id="video">
         <div class="step"><div><div class="no">04</div><h2>Video: smooth over time, then gate.</h2></div>
           <p>Each track is re-encoded every 10 frames and averaged with an EMA. Every frame, the best track wins only if it scores at least 0.45 and its box is full-body shaped, so strangers and half-visible people never get the box.</p></div>
-        <figure><a href="/figures/fig4_video.png"><img src="/figures/fig4_video.png" alt="Figure 4: video grounding over time" loading="lazy"></a><figcaption><span>Figure 4 · Mall dataset, real tracker output</span><span>open full size ↗</span></figcaption></figure>
       </section>
 
       <section id="mall">
         <div class="step"><div><div class="no">05</div><h2>Graded against 62,315 labelled heads.</h2></div>
           <p>On the Mall dataset, each labelled head may match one person box, and only if it sits in the top 45% of that box. The detector is precise (97.7%), but at 640 px it finds only 39% of a dense crowd, and 66% at 1280 px.</p></div>
-        <figure><a href="/figures/fig5_mall.png"><img src="/figures/fig5_mall.png" alt="Figure 5: Mall detector evaluation" loading="lazy"></a><figcaption><span>Figure 5 · frame 790</span><span>open full size ↗</span></figcaption></figure>
-        <div class="pair" style="margin-top:22px">
-          <figure><a href="/figures/mall_grounding.png"><img src="/figures/mall_grounding.png" alt="Four Mall descriptions and the boxed shopper" loading="lazy"></a><figcaption><span>Four descriptions, four right shoppers</span><span>↗</span></figcaption></figure>
-          <figure><a href="/figures/mall_detection.png"><img src="/figures/mall_detection.png" alt="Detection recall on the Mall dataset" loading="lazy"></a><figcaption><span>People found vs labelled</span><span>↗</span></figcaption></figure>
-        </div>
       </section>
 
       <section id="results">
         <div class="step"><div><div class="no">06</div><h2>40% → 71% first-guess accuracy.</h2></div>
           <p>The same test, the same code, 200 people the model never trained on. Every grade nearly doubles, and the right person is in the top 10 for 93% of searches.</p></div>
-        <figure><a href="/figures/fig6_results.png"><img src="/figures/fig6_results.png" alt="Figure 6: results" loading="lazy"></a><figcaption><span>Figure 6</span><span>open full size ↗</span></figcaption></figure>
       </section>
     </article>
   </div>
