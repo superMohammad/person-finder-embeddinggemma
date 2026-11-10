@@ -79,7 +79,7 @@
     <div><span class="n">04</span>Step 1 · Measure before changing anything</div>
     <div><span class="n">05</span>How the grades work</div>
     <div><span class="n">06</span>Step 2 · Fine-tuning</div>
-    <div><span class="n">07</span>Step 3 · The results</div>
+    <div><span class="n">07</span>Step 3 · The results, and how they compare</div>
     <div><span class="n">08</span>Step 4 · The image-search website</div>
     <div><span class="n">09</span>Step 5 · Live video</div>
     <div><span class="n">10</span>Step 6 · A real crowd: the Mall dataset</div>
@@ -201,6 +201,40 @@
 </section>
 
 <section class="chapter">
+  <div class="kicker">07b · Comparison · <i>when:</i> last, after every experiment · <code>TBPR_compare.ipynb</code></div>
+  <h2>How it compares with CLIP, IRRA, RDE and others</h2>
+  <p class="lede">A number like 71% only means something next to other numbers. So the model was compared two ways: with famous general models run on exactly the same test, and with the published results of methods built for this task.</p>
+  <div class="simple"><div class="t">In simple words · CLIP and SigLIP</div>CLIP (OpenAI) and SigLIP (Google) learned from hundreds of millions of internet photos with their captions. They are the standard “text meets image” models. Here they are used <b>zero-shot</b>: as downloaded, with no practice on person search.</div>
+  <div class="simple"><div class="t">In simple words · IRRA, RDE, RaSa, APTM</div>These are research methods built for exactly this task and trained on the same RSTPReid training people. Their numbers are copied from their papers, because they were not re-run here. Most of them start from a CLIP-sized image model (ViT-B/16), which is smaller than EmbeddingGemma-2.</div>
+  <h3>On RSTPReid (photos and long descriptions)</h3>
+  <table>
+    <tr><th>Method</th><th>Trained on RSTPReid?</th><th class="r">Rank-1</th><th class="r">Rank-10</th><th class="r">mAP</th><th class="r">mINP</th></tr>
+    <tr><td><b>EmbeddingGemma-2, fine-tuned (this project)</b></td><td>yes</td><td class="r"><b>71.1</b></td><td class="r"><b>93.2</b></td><td class="r"><b>54.7</b></td><td class="r"><b>29.5</b></td></tr>
+    <tr><td>APTM (ACM MM 2023)</td><td>yes</td><td class="r">67.5</td><td class="r">91.5</td><td class="r">52.6</td><td class="r">–</td></tr>
+    <tr><td>RaSa (IJCAI 2023)</td><td>yes</td><td class="r">66.9</td><td class="r">91.4</td><td class="r">52.3</td><td class="r">–</td></tr>
+    <tr><td>RDE (CVPR 2024)</td><td>yes</td><td class="r">65.4</td><td class="r">89.9</td><td class="r">50.9</td><td class="r">28.1</td></tr>
+    <tr><td>IRRA (CVPR 2023)</td><td>yes</td><td class="r">60.2</td><td class="r">88.2</td><td class="r">47.2</td><td class="r">25.3</td></tr>
+    <tr><td>CLIP ViT-B/16, fine-tuned (AAAI 2024 baseline)</td><td>yes</td><td class="r">56.2</td><td class="r">86.6</td><td class="r">43.3</td><td class="r">–</td></tr>
+    <tr><td>EmbeddingGemma-2, zero-shot</td><td>no</td><td class="r">40.0</td><td class="r">75.3</td><td class="r">28.8</td><td class="r">9.7</td></tr>
+    <tr><td>SigLIP B/16, zero-shot</td><td>no</td><td class="r">30.5</td><td class="r">67.0</td><td class="r">22.0</td><td class="r">6.5</td></tr>
+    <tr><td>CLIP ViT-L/14, zero-shot</td><td>no</td><td class="r">11.3</td><td class="r">37.7</td><td class="r">8.2</td><td class="r">2.0</td></tr>
+    <tr><td>CLIP ViT-B/16, zero-shot</td><td>no</td><td class="r">9.9</td><td class="r">34.4</td><td class="r">7.2</td><td class="r">1.6</td></tr>
+  </table>
+  <p><b>What this shows.</b> After fine-tuning, the model puts the right person first more often than every listed method, and among the methods that report mINP, it finds even the hardest photo of a person best. Zero-shot CLIP manages only about 10%. RSTPReid descriptions are long, and many people wear similar dark clothes, so a model has to read details such as “glasses” or “a pink bag strap”, and general models were never taught to do that for people. Rank-1 here is 71.1. The training notebook measured 71.4, because re-encoding with 16-bit numbers moves results by about 0.3.</p>
+  <h3>On live video (the Mall crowd, short colour descriptions)</h3>
+  <p><b>How it was tested.</b> The detector and tracker ran once, and every model scored exactly the same people. For four descriptions, everyone who fits was marked by eye. The test then asks two questions: when such a person is in view, is the best-scoring person a right one (<b>top-1</b>)? And how cleanly can one threshold separate right from wrong people (<b>AUC</b>, where 1.0 is perfect)?</p>
+  <table>
+    <tr><th>Embedder</th><th class="r">Top-1 in view</th><th class="r">AUC</th><th class="r">Striped shirt</th><th class="r">Crops / second</th></tr>
+    <tr><td><b>EmbeddingGemma-2, fine-tuned</b></td><td class="r"><b>86.2%</b></td><td class="r"><b>0.952</b></td><td class="r"><b>96.8%</b></td><td class="r">34</td></tr>
+    <tr><td>EmbeddingGemma-2, zero-shot</td><td class="r">85.2%</td><td class="r">0.935</td><td class="r">93.5%</td><td class="r">34</td></tr>
+    <tr><td>CLIP ViT-B/16, zero-shot</td><td class="r">84.3%</td><td class="r">0.949</td><td class="r">86.4%</td><td class="r">345</td></tr>
+    <tr><td>CLIP ViT-L/14, zero-shot</td><td class="r">82.4%</td><td class="r">0.936</td><td class="r">87.7%</td><td class="r">143</td></tr>
+    <tr><td>SigLIP B/16, zero-shot</td><td class="r">74.7%</td><td class="r">0.916</td><td class="r">64.3%</td><td class="r">345</td></tr>
+  </table>
+  <p><b>What this shows.</b> With short colour cues such as “a woman in a red coat”, the gap almost closes. CLIP has seen millions of red coats, and colour alone often picks the right person. The fine-tuned model is still the best overall, and clearly the best on the patterned “red and white striped shirt”, but CLIP encodes crops 10× faster. <b>Why it matters:</b> the video demo stays real-time because each person is re-encoded only every 10 frames, and that is what makes the slower but more accurate model affordable. This test is small (4 descriptions, 573 frames), so read it as a trend, not a ranking.</p>
+</section>
+
+<section class="chapter">
   <div class="kicker">08 · Step 4 · <i>when:</i> after the model is final · <code>demo/server.py</code></div>
   <h2>The image-search website</h2>
   <p>A small web server, written with Python's built-in HTTP library and no web framework, loads the fine-tuned model and the pre-computed photo embeddings. When you type a sentence, it encodes only that sentence (a few milliseconds), scores it against all photos with one matrix multiplication on the GPU, and returns the top 5.</p>
@@ -282,6 +316,8 @@ GET  /imgs/&lt;name&gt;          only names that exist in the dataset</pre>
     <dt>Tracker (ByteTrack)</dt><dd>Gives each box a stable id from frame to frame.</dd>
     <dt>EMA</dt><dd>A running average that favours recent values.</dd>
     <dt>Precision / recall</dt><dd>How often a detection is right / how many real people are found.</dd>
+    <dt>CLIP / SigLIP</dt><dd>General text-and-image models trained on internet photos and captions, used here without extra training.</dd>
+    <dt>AUC</dt><dd>The chance that a right person scores higher than a wrong one: 1.0 is perfect, 0.5 is a coin flip.</dd>
     <dt>Hungarian algorithm</dt><dd>Finds the best one-to-one pairing between two sets, here boxes and head dots.</dd>
   </dl>
 </section>
@@ -289,10 +325,11 @@ GET  /imgs/&lt;name&gt;          only names that exist in the dataset</pre>
 <section class="chapter">
   <div class="kicker">13 · Run it yourself</div>
   <h2>Commands</h2>
-  <pre># 1. measure zero-shot, fine-tune, then stress-test on the mall (each notebook saves its outputs)
+  <pre># 1. measure zero-shot, fine-tune, stress-test on the mall, then compare (each notebook saves its outputs)
 .venv/bin/jupyter execute --inplace TBPR_ex.ipynb
 .venv/bin/jupyter execute --inplace TBPR_finetune.ipynb     # ≈ 18 GB GPU, ≈ 1.7 h
 .venv/bin/jupyter execute --inplace TBPR_mall.ipynb
+.venv/bin/jupyter execute --inplace TBPR_compare.ipynb
 
 # 2. the website: image search on /, live video on /video
 .venv/bin/python demo/server.py --port 8000 \

@@ -1,0 +1,16 @@
+method,venue,image backbone,trained on RSTPReid,Rank-1,Rank-5,Rank-10,mAP,mINP
+EmbeddingGemma-2 fine-tuned (ours),measured here,EmbeddingGemma-2 fine-tuned,yes,71.1,87.35000000000001,93.2,54.744064807891846,29.454222321510315
+APTM,ACM MM 2023,Swin-B,yes,67.5,85.7,91.45,52.56,
+RaSa,IJCAI 2023,ALBEF ViT-B/16,yes,66.9,86.5,91.35,52.31,
+RDE,CVPR 2024,CLIP ViT-B/16,yes,65.35,83.95,89.9,50.88,28.08
+TBPS-CLIP,AAAI 2024,CLIP ViT-B/16,yes,61.95,83.55,88.75,48.26,
+IRRA,CVPR 2023,CLIP ViT-B/16,yes,60.2,81.3,88.2,47.17,25.28
+CLIP fine-tuned (TBPS-CLIP baseline),AAAI 2024,CLIP ViT-B/16,yes,56.15,78.3,86.6,43.26,
+CFine,TIP 2023,CLIP ViT-B/16,yes,50.55,72.5,81.6,,
+IVT,ECCV-W 2022,ViT-B/16,yes,46.7,70.0,78.8,,
+SSAN,arXiv 2021,ResNet-50,yes,43.5,67.8,77.15,,
+EmbeddingGemma-2 zero-shot,measured here,EmbeddingGemma-2 zero-shot,no (zero-shot),39.95,65.45,75.3,28.751009702682495,9.656520187854767
+DSSL,ACM MM 2021,ResNet-50,yes,39.05,62.6,73.95,,
+SigLIP B/16,measured here,SigLIP B/16,no (zero-shot),30.5,56.39999999999999,67.0,21.99172079563141,6.495695561170578
+CLIP ViT-L/14,measured here,CLIP ViT-L/14,no (zero-shot),11.25,26.35,37.65,8.2078717648983,2.013823390007019
+CLIP ViT-B/16,measured here,CLIP ViT-B/16,no (zero-shot),9.85,24.65,34.4,7.20236673951149,1.6374962404370308

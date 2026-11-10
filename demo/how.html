@@ -31,6 +31,14 @@
   figure img { display: block; width: 100%; }
   figcaption { margin-top: 8px; font: 12px var(--mono); color: var(--muted); display: flex; justify-content: space-between; gap: 12px; }
   .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .cmp { width: 100%; border-collapse: collapse; font-size: 14.5px; margin-top: 8px; }
+  .cmp th { text-align: left; font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--rule); }
+  .cmp td { padding: 9px 10px; border-bottom: 1px solid var(--line); }
+  .cmp td.n, .cmp th.n { text-align: right; font-family: var(--mono); font-size: 13.5px; }
+  .cmp tr.ours td { font-weight: 600; background: var(--sheet); }
+  .cmp .tag { font-size: 10.5px; }
+  .tbl-cap { font: 12px/1.6 var(--mono); color: var(--muted); margin: 10px 0 30px; }
+  .tbl-wrap { overflow-x: auto; }
   @media (max-width: 960px) { .cols { grid-template-columns: 1fr; } .toc { display: none; } .step { grid-template-columns: 1fr; gap: 12px; } .pair { grid-template-columns: 1fr; } }
   @media (max-width: 640px) { .why { grid-template-columns: 1fr; } .step .no { font-size: 56px; } }
 </style>
@@ -48,9 +56,9 @@
 </div></div>
 
 <main><div class="wrap">
-  <div class="eyebrow">Method · one figure, six steps</div>
+  <div class="eyebrow">Method · one figure, seven steps</div>
   <h1 class="display">One model, <i>two uses,</i> one green box.</h1>
-  <p class="standfirst">The whole project in one figure and six short steps, from the dataset to a live mall camera. Each step says what was done, and why it was done that way.</p>
+  <p class="standfirst">The whole project in one figure and seven short steps, from the dataset to a live mall camera. Each step says what was done, and why it was done that way.</p>
 
   <div class="cols">
     <nav class="toc" aria-label="Contents">
@@ -60,6 +68,7 @@
       <a href="#video"><span>04</span>Live video</a>
       <a href="#mall"><span>05</span>A real crowd</a>
       <a href="#results"><span>06</span>Results</a>
+      <a href="#compare"><span>07</span>How it compares</a>
       <a class="pdf" href="/docs/Person_Finder_Explained.pdf"><b>Read the full explanation</b><span>PDF · plain words</span></a>
     </nav>
 
@@ -95,6 +104,34 @@
       <section id="results">
         <div class="step"><div><div class="no">06</div><h2>40% → 71% first-guess accuracy.</h2></div>
           <p>The same test, the same code, 200 people the model never trained on. Every grade nearly doubles, and the right person is in the top 10 for 93% of searches.</p></div>
+      </section>
+
+      <section id="compare">
+        <div class="step"><div><div class="no">07</div><h2>Against CLIP, IRRA, RDE, RaSa, APTM.</h2></div>
+          <p>On RSTPReid's long descriptions, the fine-tuned model beats every listed method. In the Mall video, where the descriptions are short colour cues, zero-shot CLIP nearly catches up and runs 10× faster. The patterned "striped shirt" is where fine-tuning still wins clearly.</p></div>
+        <div class="tbl-wrap"><table class="cmp">
+          <tr><th>RSTPReid test split</th><th>Venue</th><th>Trained</th><th class="n">Rank-1</th><th class="n">Rank-10</th><th class="n">mAP</th><th class="n">mINP</th></tr>
+          <tr class="ours"><td>EmbeddingGemma-2, fine-tuned (this project)</td><td></td><td><span class="tag good">yes</span></td><td class="n">71.1</td><td class="n">93.2</td><td class="n">54.7</td><td class="n">29.5</td></tr>
+          <tr><td>APTM</td><td>ACM MM 2023</td><td><span class="tag">yes</span></td><td class="n">67.5</td><td class="n">91.5</td><td class="n">52.6</td><td class="n">–</td></tr>
+          <tr><td>RaSa</td><td>IJCAI 2023</td><td><span class="tag">yes</span></td><td class="n">66.9</td><td class="n">91.4</td><td class="n">52.3</td><td class="n">–</td></tr>
+          <tr><td>RDE</td><td>CVPR 2024</td><td><span class="tag">yes</span></td><td class="n">65.4</td><td class="n">89.9</td><td class="n">50.9</td><td class="n">28.1</td></tr>
+          <tr><td>IRRA</td><td>CVPR 2023</td><td><span class="tag">yes</span></td><td class="n">60.2</td><td class="n">88.2</td><td class="n">47.2</td><td class="n">25.3</td></tr>
+          <tr><td>CLIP ViT-B/16, fine-tuned</td><td>AAAI 2024</td><td><span class="tag">yes</span></td><td class="n">56.2</td><td class="n">86.6</td><td class="n">43.3</td><td class="n">–</td></tr>
+          <tr><td>EmbeddingGemma-2, zero-shot</td><td>measured here</td><td><span class="tag">no</span></td><td class="n">40.0</td><td class="n">75.3</td><td class="n">28.8</td><td class="n">9.7</td></tr>
+          <tr><td>SigLIP B/16, zero-shot</td><td>measured here</td><td><span class="tag">no</span></td><td class="n">30.5</td><td class="n">67.0</td><td class="n">22.0</td><td class="n">6.5</td></tr>
+          <tr><td>CLIP ViT-L/14, zero-shot</td><td>measured here</td><td><span class="tag">no</span></td><td class="n">11.3</td><td class="n">37.7</td><td class="n">8.2</td><td class="n">2.0</td></tr>
+          <tr><td>CLIP ViT-B/16, zero-shot</td><td>measured here</td><td><span class="tag">no</span></td><td class="n">9.9</td><td class="n">34.4</td><td class="n">7.2</td><td class="n">1.6</td></tr>
+        </table></div>
+        <p class="tbl-cap">Published rows are copied from the papers (RDE, Table 6; APTM, Table 4; TBPS-CLIP, Table 8). The "measured here" rows use the same split and code as this project.</p>
+        <div class="tbl-wrap"><table class="cmp">
+          <tr><th>Mall video · same tracks for all</th><th class="n">Top-1 in view</th><th class="n">AUC</th><th class="n">Striped shirt</th><th class="n">Crops / s</th></tr>
+          <tr class="ours"><td>EmbeddingGemma-2, fine-tuned</td><td class="n">86.2%</td><td class="n">0.952</td><td class="n">96.8%</td><td class="n">34</td></tr>
+          <tr><td>EmbeddingGemma-2, zero-shot</td><td class="n">85.2%</td><td class="n">0.935</td><td class="n">93.5%</td><td class="n">34</td></tr>
+          <tr><td>CLIP ViT-B/16, zero-shot</td><td class="n">84.3%</td><td class="n">0.949</td><td class="n">86.4%</td><td class="n">345</td></tr>
+          <tr><td>CLIP ViT-L/14, zero-shot</td><td class="n">82.4%</td><td class="n">0.936</td><td class="n">87.7%</td><td class="n">143</td></tr>
+          <tr><td>SigLIP B/16, zero-shot</td><td class="n">74.7%</td><td class="n">0.916</td><td class="n">64.3%</td><td class="n">345</td></tr>
+        </table></div>
+        <p class="tbl-cap">4 descriptions, 573 frames with the described person in view, people labelled by eye. Top-1: the best-scoring person is a right one. AUC: how cleanly one threshold separates the right people from the rest. TBPR_compare.ipynb</p>
       </section>
     </article>
   </div>

@@ -29,6 +29,36 @@ One embedding model, [EmbeddingGemma-2](https://huggingface.co/google/embeddingg
 
 <p align="center"><img src="docs/diagrams/fig1_overview.png" alt="Figure 1: (a) training with contrastive alignment, (b) text-driven person search in live video" width="100%"></p>
 
+## How it compares
+
+**RSTPReid test split** (2,000 descriptions × 1,000 photos, 200 unseen people)
+
+| Method | Venue | Trained on RSTPReid | Rank-1 | Rank-5 | Rank-10 | mAP | mINP |
+|---|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **EmbeddingGemma-2, fine-tuned (this repo)** | | ✓ | **71.1** | **87.4** | **93.2** | **54.7** | **29.5** |
+| APTM | ACM MM 2023 | ✓ | 67.5 | 85.7 | 91.5 | 52.6 | – |
+| RaSa | IJCAI 2023 | ✓ | 66.9 | 86.5 | 91.4 | 52.3 | – |
+| RDE | CVPR 2024 | ✓ | 65.4 | 84.0 | 89.9 | 50.9 | 28.1 |
+| IRRA | CVPR 2023 | ✓ | 60.2 | 81.3 | 88.2 | 47.2 | 25.3 |
+| CLIP ViT-B/16, fine-tuned | AAAI 2024 | ✓ | 56.2 | 78.3 | 86.6 | 43.3 | – |
+| EmbeddingGemma-2, zero-shot | measured here | | 40.0 | 65.5 | 75.3 | 28.8 | 9.7 |
+| SigLIP B/16, zero-shot | measured here | | 30.5 | 56.4 | 67.0 | 22.0 | 6.5 |
+| CLIP ViT-L/14, zero-shot | measured here | | 11.3 | 26.4 | 37.7 | 8.2 | 2.0 |
+
+**Live video, Mall crowd** (same tracks for every model, 4 descriptions, 573 labelled frames)
+
+| Embedder | Top-1 when the person is in view | AUC | Crops / s |
+|---|:---:|:---:|:---:|
+| **EmbeddingGemma-2, fine-tuned** | **86.2%** | **0.952** | 34 |
+| CLIP ViT-B/16, zero-shot | 84.3% | 0.949 | **345** |
+| EmbeddingGemma-2, zero-shot | 85.2% | 0.935 | 34 |
+| CLIP ViT-L/14, zero-shot | 82.4% | 0.936 | 143 |
+| SigLIP B/16, zero-shot | 74.7% | 0.916 | 345 |
+
+<sub>"measured here": same code and split as this repo, in <a href="TBPR_compare.ipynb">TBPR_compare.ipynb</a>. Published rows are copied from the papers (<a href="https://arxiv.org/abs/2308.09911">RDE, Table 6</a>, <a href="https://arxiv.org/abs/2306.02898">APTM</a>, <a href="https://arxiv.org/abs/2308.10045">TBPS-CLIP</a>). EmbeddingGemma-2 is larger than the ViT-B/16 backbones most of them use. Re-encoding in bf16 moves Rank-1 by about ±0.3 (71.4 in the training notebook).</sub>
+
+On long, detailed descriptions, fine-tuning beats every listed method. On short colour cues in video, CLIP is almost as good and 10× faster. The fine-tuned model's clearest video win is the patterned "red and white striped shirt": 96.8% against 86–88% for CLIP.
+
 **New to the topic?** [**Person_Finder_Explained.pdf**](docs/Person_Finder_Explained.pdf) walks through the whole project from A to Z in plain words. For every step it explains what was done, when, and why, with a glossary at the end.
 
 ## Run it
@@ -44,6 +74,7 @@ mkdir -p models && .venv/bin/python -c "from ultralytics import YOLO; YOLO('yolo
 .venv/bin/jupyter execute --inplace TBPR_ex.ipynb         # zero-shot baseline, caches embeddings
 .venv/bin/jupyter execute --inplace TBPR_finetune.ipynb   # ≈ 18 GB GPU, saves models/embeddinggemma2-rstpreid
 .venv/bin/jupyter execute --inplace TBPR_mall.ipynb       # the crowd stress test
+.venv/bin/jupyter execute --inplace TBPR_compare.ipynb    # CLIP / SigLIP / published methods, RSTPReid and video
 
 # 4. the website: search on /, live video on /video, method on /how
 .venv/bin/python demo/server.py --port 8000 \
@@ -64,7 +95,7 @@ The video demo also runs on its own, in a desktop window or on a webcam (`--sour
 | Path | What |
 |---|---|
 | `tbpr.py` | shared data loading and metrics: Rank-k, mAP and mINP on the GPU, plus Mall head matching |
-| `TBPR_ex.ipynb` → `TBPR_finetune.ipynb` → `TBPR_mall.ipynb` | the three experiments, in the order they were run |
+| `TBPR_ex.ipynb` → `TBPR_finetune.ipynb` → `TBPR_mall.ipynb` → `TBPR_compare.ipynb` | the four experiments, in the order they were run |
 | `demo/` | standard-library web server, search and video pages, and the YOLO + ByteTrack + EmbeddingGemma tracker |
 | `docs/diagrams/` | the method figure, generated as SVG by `build_figures.py` and rendered to PNG by `render.py` |
 | `docs/explainer/` | the source of the PDF walkthrough |

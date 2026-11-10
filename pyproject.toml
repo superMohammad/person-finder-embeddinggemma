@@ -21,4 +21,6 @@ dependencies = [
     "opencv-python>=5.0.0.93",
     "lap>=0.5.14",
     "scipy>=1.18.1",
+    "sentencepiece>=0.2.0",
+    "protobuf>=5.29.0",
 ]
