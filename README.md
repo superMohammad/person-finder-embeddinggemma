@@ -27,30 +27,30 @@ One embedding model, [EmbeddingGemma-2](https://huggingface.co/google/embeddingg
 - **Fine-tuned for the job.** Contrastive training on 37,010 sentence–photo pairs from [RSTPReid](https://github.com/NjtechCVLab/RSTPReid-Dataset), with batches that never hold the same person twice.
 - **Stress-tested in a real crowd.** On the [Mall dataset](https://personal.ie.cuhk.edu.hk/~ccloy/downloads_mall_dataset.html), with 2,000 frames, up to 53 people each and 62,315 hand-labelled heads.
 
-<p align="center"><img src="docs/diagrams/fig1_overview.png" alt="Figure 1: one model reads both the words and the photos" width="100%"></p>
+<p align="center"><img src="docs/diagrams/fig1_overview.png" alt="Figure 1: (a) training with contrastive alignment, (b) text-driven person search in live video" width="100%"></p>
 
 ## How it works, in six figures
 
 Every person image and score in these figures is a real model output.
 
 <details>
-<summary><b>Figure 2 · What the model learns from, and how it is graded</b></summary>
-<br><img src="docs/diagrams/fig2_data.png" alt="Figure 2">
+<summary><b>Figure 2 · Search: encode the gallery once, then one product and a sort per query; how it is graded</b></summary>
+<br><img src="docs/diagrams/fig2_retrieval.png" alt="Figure 2">
 </details>
 <details>
-<summary><b>Figure 3 · Fine-tuning pulls each sentence onto its own person</b> (real embeddings, before and after)</summary>
-<br><img src="docs/diagrams/fig3_space.png" alt="Figure 3">
+<summary><b>Figure 3 · Training details: unique-person batches, cached loss, Matryoshka sizes</b></summary>
+<br><img src="docs/diagrams/fig3_training.png" alt="Figure 3">
 </details>
 <details>
-<summary><b>Figure 4 · The training step, the batch rule, Matryoshka sizes, and the recipe</b></summary>
-<br><img src="docs/diagrams/fig4_training.png" alt="Figure 4">
+<summary><b>Figure 4 · Live video: re-encode every 10 frames, smooth, then two gates</b></summary>
+<br><img src="docs/diagrams/fig4_video.png" alt="Figure 4">
 </details>
 <details>
-<summary><b>Figure 5 · From a video frame to one green box</b></summary>
-<br><img src="docs/diagrams/fig5_video.png" alt="Figure 5">
+<summary><b>Figure 5 · Mall crowd: matching person boxes to 62,315 labelled heads</b></summary>
+<br><img src="docs/diagrams/fig5_mall.png" alt="Figure 5">
 </details>
 <details>
-<summary><b>Figure 6 · Results, and where the limits are</b></summary>
+<summary><b>Figure 6 · Results</b></summary>
 <br><img src="docs/diagrams/fig6_results.png" alt="Figure 6">
 </details>
 
@@ -91,7 +91,7 @@ The video demo also runs on its own, in a desktop window or on a webcam (`--sour
 | `tbpr.py` | shared data loading and metrics: Rank-k, mAP and mINP on the GPU, plus Mall head matching |
 | `TBPR_ex.ipynb` → `TBPR_finetune.ipynb` → `TBPR_mall.ipynb` | the three experiments, in the order they were run |
 | `demo/` | standard-library web server, search and video pages, and the YOLO + ByteTrack + EmbeddingGemma tracker |
-| `docs/diagrams/` | the paper-style figures as HTML, rendered to PNG by `render.py` |
+| `docs/diagrams/` | the paper-style figures, generated as SVG by `build_figures.py` and rendered to PNG by `render.py` |
 | `docs/explainer/` | the source of the PDF walkthrough |
 | `promo/` | the Remotion project behind the GIF |
 | `outputs/` | result tables and plots (embeddings and weights are not committed) |

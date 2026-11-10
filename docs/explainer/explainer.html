@@ -106,7 +106,6 @@
   <div class="kicker">02 · The data · <i>when:</i> before any code</div>
   <h2>RSTPReid: 4,101 people, 41,010 sentences</h2>
   <p>The project uses the public <b>RSTPReid</b> dataset: 20,505 photos of 4,101 different people taken by 15 street cameras. Each photo comes with two English descriptions written by two different people.</p>
-  <figure><img src="../diagrams/fig2_data.png" alt=""><figcaption>Figure 2. One person seen by five cameras, how the dataset is split, and what each grade measures.</figcaption></figure>
   <h3>The split, and why it is done by person</h3>
   <table>
     <tr><th>Split</th><th class="r">People</th><th class="r">Photos</th><th>Used for</th></tr>
@@ -132,7 +131,7 @@
     <tr><td>Text prompt</td><td><code>SearchQuery</code></td><td>The model was trained to treat text differently depending on the job. This prompt tells it “this sentence is a search”, which ranks better than plain text.</td></tr>
     <tr><td>Vision tokens</td><td><code>70</code></td><td>An image is cut into small pieces called “tokens”. The model allows 70 to 1,120 tokens. Person crops are small and blurry, so 70 was both the fastest and the most accurate in the sweep (280 was the worst).</td></tr>
   </table>
-  <figure><img src="../diagrams/fig1_overview.png" alt=""><figcaption>Figure 1. One model reads both words and photos into the same space. Search and video are two uses of the same idea.</figcaption></figure>
+  <figure><img src="../diagrams/fig1_overview.png" alt=""><figcaption>Figure 1. (a) Training: descriptions and photos pass through the same EmbeddingGemma-2 backbone, and the loss pulls each matching pair together. (b) Inference in video: detected people are cropped, encoded and compared with the query, and the best match is boxed.</figcaption></figure>
 </section>
 
 <section class="chapter">
@@ -164,6 +163,7 @@
     <tr><td><b>mAP</b></td><td>Are <i>all</i> photos of that person near the top?</td><td>Not just one sighting: every camera that saw them.</td></tr>
     <tr><td><b>mINP</b></td><td>How deep is the <i>hardest</i> photo of that person?</td><td>The one blurry, dark sighting. Is it still found?</td></tr>
   </table>
+  <figure><img src="../diagrams/fig2_retrieval.png" alt=""><figcaption>Figure 2. (a) The gallery is encoded once and cached. (b) A query is one matrix–vector product and a sort; these are real top-5 results. (c) How Rank-k, AP and INP are computed for one ranking.</figcaption></figure>
   <p>The test runs each of the 2,000 test descriptions against the 1,000 test photos (<b>protocol A</b>). Every grade is an average over those 2,000 searches. All grading code lives in one shared file, <code>tbpr.py</code>, so the zero-shot and fine-tuned notebooks are graded in exactly the same way.</p>
   <div class="simple"><div class="t">Why several grades?</div>One number hides things. A model can be good at the first guess (Rank-1) but leave the person's other photos buried (low mAP). Reporting all of them shows both.</div>
 </section>
@@ -173,7 +173,7 @@
   <h2>Fine-tuning: teach the model what matters for people</h2>
   <p class="lede">The original model learned from general images and text on the internet. It has never been told that “dark red hooded top” and a blurry street crop of a red coat are the same person. Fine-tuning shows it 37,010 examples of exactly that.</p>
   <div class="simple"><div class="t">In simple words · fine-tuning</div>Fine-tuning is extra practice on one specific job. The model keeps everything it already knows, and its numbers are nudged a little at a time until it gets better at this job.</div>
-  <figure><img src="../diagrams/fig4_training.png" alt=""><figcaption>Figure 4. One training step (a), the batch rule (b), nested vector sizes (c), the recipe (d) and the validation curve (e).</figcaption></figure>
+  <figure><img src="../diagrams/fig3_training.png" alt=""><figcaption>Figure 3. (a) How a batch is built, and the false negative it avoids. (b) The cached loss in three steps. (c) Matryoshka sizes and their test Rank-1.</figcaption></figure>
   <h3>The loss: a multiple-choice test, taken both ways</h3>
   <p>Each step takes 128 (sentence, photo) pairs. For each sentence, the correct photo is the one it was written for, and the other 127 photos are wrong answers. The model is rewarded for giving the right pair the highest score in its row. The same test is then run the other way: each photo must pick its sentence. This is <b>contrastive learning</b>, using <code>CachedMultipleNegativesRankingLoss</code>.</p>
   <ul>
@@ -201,8 +201,7 @@
   <h2>The results</h2>
   <figure><img src="../diagrams/fig6_results.png" alt=""><figcaption>Figure 6. Every grade on the 200 unseen test people, before and after fine-tuning.</figcaption></figure>
   <p>Fine-tuning nearly doubles every grade. <b>678</b> test searches moved up to first place, and 51 dropped out of it. The right person is now in the top 10 for 93% of searches.</p>
-  <figure><img src="../diagrams/fig3_space.png" alt=""><figcaption>Figure 3. Real embeddings of six unseen people, squashed to 2-D. Fine-tuning moves each sentence onto its person.</figcaption></figure>
-  <p><b>Why it works, in one picture:</b> before training, a sentence was about equally close to everyone (0.73 to its own person, 0.66 to others). After training, the gap is wide (0.51 against 0.12). That wide gap is what lets a single threshold separate the right person from the crowd in video later.</p>
+  <p><b>Why it works:</b> measured on six unseen test people, before training a sentence was about equally close to everyone (0.73 to its own person, 0.66 to others). After training, the gap is wide (0.51 against 0.12). That wide gap is what lets a single threshold separate the right person from the crowd in video later.</p>
   <figure><img src="../../outputs/finetuned/examples_before_after.png" alt=""><figcaption>Searches the original model got wrong at first place and the fine-tuned model gets right. Aqua frame: correct person.</figcaption></figure>
 </section>
 
@@ -224,7 +223,7 @@ GET  /imgs/&lt;name&gt;          only names that exist in the dataset</pre>
   <div class="kicker">09 · Step 5 · <i>when:</i> after search worked · <code>demo/track_person.py</code></div>
   <h2>Live video: from a frame to one green box</h2>
   <p class="lede">The model only understands photos of single people. Video is turned into exactly that: a stream of single-person photos.</p>
-  <figure><img src="../diagrams/fig5_video.png" alt=""><figcaption>Figure 5. The five stages, with the tracker's real output for one frame of the Mall dataset.</figcaption></figure>
+  <figure><img src="../diagrams/fig4_video.png" alt=""><figcaption>Figure 4. (a) Each track is re-encoded every 10 frames and smoothed with an EMA. (b) Every frame, the best track must pass two gates to get the green box. Real tracker output from the Mall dataset.</figcaption></figure>
   <table>
     <tr><th>Stage</th><th>What</th><th>Why this choice</th></tr>
     <tr><td>Detect</td><td>YOLO26s, “person” class only</td><td>Small and fast, and it finds where people are so that the language model only looks at people.</td></tr>
@@ -244,6 +243,7 @@ GET  /imgs/&lt;name&gt;          only names that exist in the dataset</pre>
   <p class="lede">Everything so far was tested on clean, cut-out photos. A shopping mall is the real thing: 13–53 people in each frame, people hiding behind each other, and tiny figures far from the camera.</p>
   <p>The Mall dataset (Chen et al., BMVC 2012) has 2,000 frames from one camera. A human put a dot on <b>every head</b>, 62,315 dots in total. There are no names or ids, so it can grade one question exactly: <i>does the detector see the people?</i> The frames were also turned into a video, <code>videos/mall.mp4</code>, which plays in the website.</p>
   <h3>How the detector is graded</h3>
+  <figure><img src="../diagrams/fig5_mall.png" alt=""><figcaption>Figure 5. One Mall frame: labelled heads, YOLO boxes, the matching rule and the one-to-one assignment.</figcaption></figure>
   <p>Each head dot may be matched to at most one person box, and only if the dot sits in the top 45% of that box. The optimal one-to-one pairing is found with the Hungarian algorithm. Matched dots count as hits, unmatched dots are misses, and unmatched boxes are false alarms.</p>
   <figure><img src="../../outputs/mall/results_detection.png" alt=""><figcaption>Left: people per frame, labelled against detected. Right: the share of people found at each height in the frame. People near the top of the image are far away and tiny.</figcaption></figure>
   <table>
@@ -261,7 +261,7 @@ GET  /imgs/&lt;name&gt;          only names that exist in the dataset</pre>
   <h2>What it cannot do yet, and what would come next</h2>
   <ul>
     <li><b>Small and hidden people.</b> In dense crowds, about a third of people get no box even at 1280 px. The next step would be a detector trained on crowds, or tiling the frame into overlapping pieces.</li>
-    <li><b>Similar clothes.</b> Two people in red share a neighbourhood in the embedding space (Figure 3b). Details such as “glasses” or “scarf” help, but a vague sentence stays ambiguous.</li>
+    <li><b>Similar clothes.</b> Two people dressed in red end up close together in the embedding space. Details such as “glasses” or “scarf” help, but a vague sentence stays ambiguous.</li>
     <li><b>Low frame rates.</b> The Mall camera records under 2 frames per second, so ByteTrack often breaks tracks and the EMA memory restarts. Normal 25–30 fps cameras do not have this problem.</li>
     <li><b>Language.</b> Training used English descriptions only.</li>
     <li><b>Responsible use.</b> This is a research demo on public research datasets. Searching for real people in real footage needs consent, legal grounds and human review of every match.</li>
@@ -313,6 +313,7 @@ GET  /imgs/&lt;name&gt;          only names that exist in the dataset</pre>
     --source videos/mall.mp4 --query "a woman in a red coat"
 
 # 4. rebuild the figures in docs/diagrams and this PDF
+.venv/bin/python docs/diagrams/build_figures.py
 .venv/bin/python docs/diagrams/render.py
 .venv/bin/python docs/explainer/build_pdf.py</pre>
 </section>
