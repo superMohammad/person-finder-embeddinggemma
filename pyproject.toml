@@ -1,0 +1,24 @@
+[project]
+name = "gemma-embedding-tbpr"
+version = "0.1.0"
+description = "Text-based person retrieval on RSTPReid with EmbeddingGemma-2"
+requires-python = ">=3.13"
+dependencies = [
+    "torch>=2.15.0",
+    "torchvision>=0.29.2",
+    "transformers>=5.22.2",
+    "sentence-transformers>=6.2.0",
+    "numpy>=2.5.4",
+    "pandas>=3.1.1",
+    "matplotlib>=3.11.2",
+    "pillow>=13.0.0",
+    "ipykernel>=7.4.0",
+    "nbformat>=5.10.4",
+    "nbclient>=0.10.2",
+    "datasets>=5.1.0",
+    "accelerate>=1.15.0",
+    "ultralytics>=8.4.208",
+    "opencv-python>=5.0.0.93",
+    "lap>=0.5.14",
+    "scipy>=1.18.1",
+]

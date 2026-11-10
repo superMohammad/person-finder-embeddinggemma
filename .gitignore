@@ -1,0 +1,25 @@
+# environments and caches
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.claude/
+CLAUDE.md
+
+# datasets (download them from their official sources, see README)
+RSTPReid/
+mall_dataset/
+videos/
+
+# model weights, checkpoints and cached embeddings (regenerate with the notebooks)
+models/
+checkpoints/
+outputs/**/*.npy
+
+# local working files
+TBPR_ex.backup.ipynb
+ar_captions.txt
+
+# promo build
+promo/node_modules/
+promo/out/

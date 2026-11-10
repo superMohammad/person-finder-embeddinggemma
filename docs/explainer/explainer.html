@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Person Finder — the whole project, explained</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=block" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 20mm 18mm 20mm 18mm; }
+  @page :first { margin: 0; }
+  :root { --paper: #f6f4ee; --ink: #141413; --ink-2: #4f4c45; --muted: #8a857a; --line: #cfc9bb; --hair: #e2ddd0; --soft: #ebe7dc; --match: #1f9d6b; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; color: var(--ink); background: #fff; font: 10.6pt/1.58 "IBM Plex Sans", sans-serif; }
+  h1, h2, h3 { font-family: "Newsreader", serif; font-weight: 500; letter-spacing: -.01em; }
+  h2 { font-size: 23pt; line-height: 1.1; margin: 0 0 4mm; break-after: avoid; }
+  h3 { font-size: 14pt; margin: 6mm 0 2mm; break-after: avoid; }
+  p { margin: 0 0 3mm; }
+  code, .mono { font-family: "IBM Plex Mono", monospace; font-size: .9em; }
+  code { background: var(--soft); padding: 0 3px; border-radius: 2px; }
+  .chapter { break-before: page; }
+  .kicker { font: 600 8pt "IBM Plex Mono"; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 2mm; }
+  .lede { font: 400 13pt/1.45 "Newsreader", serif; color: var(--ink-2); margin-bottom: 5mm; }
+
+  /* cover */
+  .cover { height: 297mm; background: var(--ink); color: var(--paper); padding: 26mm 22mm; display: flex; flex-direction: column; break-after: page; }
+  .cover .k { font: 500 9pt "IBM Plex Mono"; letter-spacing: .14em; text-transform: uppercase; color: #a9a395; }
+  .cover h1 { font-size: 46pt; line-height: 1.02; margin: 14mm 0 6mm; color: var(--paper); }
+  .cover .sub { font: 400 15pt/1.4 "Newsreader", serif; color: #d9d4c7; max-width: 140mm; }
+  .cover img { width: 100%; margin-top: 12mm; border: 1px solid #3a3935; }
+  .cover .nums { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: auto; border-top: 1px solid #4a4843; }
+  .cover .nums div { padding-top: 5mm; }
+  .cover .nums b { display: block; font: 500 28pt "Newsreader", serif; }
+  .cover .nums span { font-size: 9pt; color: #a9a395; }
+
+  /* boxes */
+  .simple { border-left: 3px solid var(--ink); background: var(--paper); padding: 3mm 4mm; margin: 4mm 0; break-inside: avoid; }
+  .simple .t { font: 600 8pt "IBM Plex Mono"; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 1mm; }
+  .ww { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin: 4mm 0; break-inside: avoid; }
+  .ww div { border: 1px solid var(--line); padding: 3mm 4mm; }
+  .ww .t { font: 600 8pt "IBM Plex Mono"; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1mm; }
+  figure { margin: 5mm 0; break-inside: avoid; }
+  figure img { width: 100%; display: block; border: 1px solid var(--hair); }
+  figcaption { font: italic 9.5pt/1.4 "Newsreader", serif; color: var(--ink-2); margin-top: 2mm; }
+  table { border-collapse: collapse; width: 100%; margin: 3mm 0 5mm; font-size: 9.5pt; break-inside: avoid; }
+  th { text-align: left; font: 600 7.5pt "IBM Plex Mono"; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-bottom: 1.2px solid var(--ink); padding: 1.5mm 2mm; }
+  td { border-bottom: 1px solid var(--hair); padding: 1.6mm 2mm; vertical-align: top; }
+  td.r, th.r { text-align: right; font-family: "IBM Plex Mono"; }
+  ol.steps, ul { padding-left: 5mm; margin: 0 0 3mm; }
+  li { margin-bottom: 1.2mm; }
+  .toc { columns: 2; column-gap: 10mm; margin-top: 6mm; }
+  .toc div { break-inside: avoid; padding: 2mm 0; border-bottom: 1px solid var(--hair); display: flex; gap: 4mm; }
+  .toc .n { font: 600 9pt "IBM Plex Mono"; color: var(--muted); width: 8mm; }
+  .gloss { display: grid; grid-template-columns: 38mm 1fr; gap: 0; }
+  .gloss dt { font: 600 9.5pt "IBM Plex Sans"; padding: 2mm 0; border-bottom: 1px solid var(--hair); }
+  .gloss dd { margin: 0; padding: 2mm 0; border-bottom: 1px solid var(--hair); }
+  pre { font: 8.4pt/1.5 "IBM Plex Mono"; background: var(--paper); padding: 3mm 4mm; white-space: pre-wrap; border-left: 3px solid var(--line); break-inside: avoid; }
+</style></head>
+<body>
+
+<section class="cover">
+  <div class="k">Person Finder · a complete walkthrough</div>
+  <h1>Finding a person from a single sentence</h1>
+  <div class="sub">How a text-and-image embedding model was measured, fine-tuned and turned into a live video tool that boxes the person you describe, explained step by step in plain words.</div>
+  <img src="../diagrams/fig1_overview.png" alt="">
+  <div class="nums">
+    <div><b>40 → 71%</b><span>first answer correct, before and after fine-tuning</span></div>
+    <div><b>≈ 26 fps</b><span>live video, end to end, on one GPU</span></div>
+    <div><b>0.72 vs 0.40</b><span>the right shopper against the next-best, in a mall crowd</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="kicker">Before you start</div>
+  <h2>How to read this document</h2>
+  <p class="lede">Every step answers three questions: <b>what</b> was done, <b>when</b> in the project it happens, and <b>why</b> it was done that way and not some other way. Wherever a technical word first appears, a box called <i>“In simple words”</i> explains it without jargon.</p>
+  <div class="simple"><div class="t">In simple words</div>The project teaches a computer to do what a security guard does when a parent says, “I lost my son, he's wearing a red jacket and black trousers”. The computer looks at every person in the photos or the video and points at the one who fits best.</div>
+  <div class="toc">
+    <div><span class="n">01</span>The problem</div>
+    <div><span class="n">02</span>The data</div>
+    <div><span class="n">03</span>The model and embeddings</div>
+    <div><span class="n">04</span>Step 1 · Measure before changing anything</div>
+    <div><span class="n">05</span>How the grades work</div>
+    <div><span class="n">06</span>Step 2 · Fine-tuning</div>
+    <div><span class="n">07</span>Step 3 · The results</div>
+    <div><span class="n">08</span>Step 4 · The image-search website</div>
+    <div><span class="n">09</span>Step 5 · Live video</div>
+    <div><span class="n">10</span>Step 6 · A real crowd: the Mall dataset</div>
+    <div><span class="n">11</span>Limits and next steps</div>
+    <div><span class="n">12</span>Glossary</div>
+    <div><span class="n">13</span>Run it yourself</div>
+  </div>
+</section>
+
+<section class="chapter">
+  <div class="kicker">01 · The problem</div>
+  <h2>Searching for people with words</h2>
+  <p class="lede">Cameras record thousands of people an hour. When someone is lost or needs to be found, nobody has a photo of them to search with, only a description.</p>
+  <p>This task is called <b>text-based person retrieval</b>. The input is a sentence such as <i>“a woman with long black hair in a white coat and blue jeans”</i>, and the output is a ranked list of person photos with the best match first. A second version of the same task works on video: the input is a sentence and a live camera feed, and the output is a box around the right person in every frame.</p>
+  <div class="ww">
+    <div><div class="t">Why words and not a photo?</div>Searching with a photo of the person (re-identification) only works when you already have a photo. A witness or a parent only has memory and words.</div>
+    <div><div class="t">Why is it hard?</div>The same red coat looks dark red in the shade and almost black at night. Descriptions are short and vague, and many people wear similar clothes.</div>
+  </div>
+  <div class="simple"><div class="t">In simple words · retrieval</div>“Retrieval” means fetching the right items from a big pile. A search engine retrieves web pages, and this project retrieves people.</div>
+</section>
+
+<section class="chapter">
+  <div class="kicker">02 · The data · <i>when:</i> before any code</div>
+  <h2>RSTPReid: 4,101 people, 41,010 sentences</h2>
+  <p>The project uses the public <b>RSTPReid</b> dataset: 20,505 photos of 4,101 different people taken by 15 street cameras. Each photo comes with two English descriptions written by two different people.</p>
+  <figure><img src="../diagrams/fig2_data.png" alt=""><figcaption>Figure 2. One person seen by five cameras, how the dataset is split, and what each grade measures.</figcaption></figure>
+  <h3>The split, and why it is done by person</h3>
+  <table>
+    <tr><th>Split</th><th class="r">People</th><th class="r">Photos</th><th>Used for</th></tr>
+    <tr><td>train</td><td class="r">3,701</td><td class="r">18,505</td><td>teaching the model</td></tr>
+    <tr><td>val</td><td class="r">200</td><td class="r">1,000</td><td>picking the best saved version during training</td></tr>
+    <tr><td>test</td><td class="r">200</td><td class="r">1,000</td><td>the final, reported grade. It is touched only once</td></tr>
+  </table>
+  <p><b>Why split by person?</b> If the same person appeared in both training and testing, the model could memorise their face and clothes, and the test would look easier than real life. Because nobody in the test set was ever seen during training, the test measures the real skill: finding <i>strangers</i>.</p>
+  <div class="simple"><div class="t">In simple words · train / val / test</div>Think of a school year. The <b>train</b> set is the homework the student practises on. The <b>val</b> set is the mock exam that tells the teacher which week the student was at their best. The <b>test</b> set is the final exam, opened once at the end.</div>
+</section>
+
+<section class="chapter">
+  <div class="kicker">03 · The model · <i>when:</i> chosen at the start</div>
+  <h2>EmbeddingGemma-2, and what an “embedding” is</h2>
+  <p>The model is Google's <b>EmbeddingGemma-2</b>. It does one thing: it turns a piece of text, <i>or</i> an image, into a list of 768 numbers. The same model handles both kinds of input.</p>
+  <div class="simple"><div class="t">In simple words · embedding</div>An embedding is like GPS coordinates for meaning. A sentence about a red jacket and a photo of a red jacket get coordinates that are close together. A sentence about a white coat gets coordinates far away. Finding the right person then becomes “find the nearest point on the map”.</div>
+  <h3>How closeness is measured: cosine similarity</h3>
+  <p>Every list of 768 numbers is scaled to length 1, which is called <i>L2-normalised</i>. Two such lists can then be compared by the angle between them. The <b>cosine</b> of that angle is 1 when they point the same way, 0 when they are unrelated, and negative when they point apart. Ranking a gallery means computing one cosine per photo and sorting.</p>
+  <h3>Three settings that matter, and why</h3>
+  <table>
+    <tr><th>Setting</th><th>Value</th><th>Why</th></tr>
+    <tr><td>Number format</td><td><code>bfloat16</code></td><td>Uses half the memory of normal 32-bit numbers, so the model runs fast on the GPU. The other 16-bit format, float16, is not supported by this model.</td></tr>
+    <tr><td>Text prompt</td><td><code>SearchQuery</code></td><td>The model was trained to treat text differently depending on the job. This prompt tells it “this sentence is a search”, which ranks better than plain text.</td></tr>
+    <tr><td>Vision tokens</td><td><code>70</code></td><td>An image is cut into small pieces called “tokens”. The model allows 70 to 1,120 tokens. Person crops are small and blurry, so 70 was both the fastest and the most accurate in the sweep (280 was the worst).</td></tr>
+  </table>
+  <figure><img src="../diagrams/fig1_overview.png" alt=""><figcaption>Figure 1. One model reads both words and photos into the same space. Search and video are two uses of the same idea.</figcaption></figure>
+</section>
+
+<section class="chapter">
+  <div class="kicker">04 · Step 1 · <i>when:</i> first, before any training · <code>TBPR_ex.ipynb</code></div>
+  <h2>Measure the model as it is: the zero-shot baseline</h2>
+  <p class="lede">You cannot know if training helped unless you know where you started. So the first experiment uses the model exactly as Google released it.</p>
+  <div class="simple"><div class="t">In simple words · zero-shot</div>“Zero-shot” means the model is tested on a task without any practice on it, like asking someone to referee a sport they have only read about.</div>
+  <ol class="steps">
+    <li><b>Encode all 20,505 photos once</b> and save them to <code>outputs/image_embeddings.npy</code>. This takes about 15 minutes. <i>Why save them?</i> Photos don't change, so there is no reason to recompute them for every search. The website reuses this file.</li>
+    <li><b>Encode all 41,010 descriptions</b> with the <code>SearchQuery</code> prompt.</li>
+    <li><b>Rank</b>: for every description, compute the cosine with every photo on the GPU, in chunks so that memory never overflows, and record where the right person landed.</li>
+  </ol>
+  <table>
+    <tr><th>Zero-shot, test split</th><th class="r">Rank-1</th><th class="r">Rank-10</th><th class="r">mAP</th></tr>
+    <tr><td>280 vision tokens</td><td class="r">35.5</td><td class="r">70.0</td><td class="r">25.0</td></tr>
+    <tr><td>70 vision tokens</td><td class="r"><b>40.1</b></td><td class="r"><b>75.4</b></td><td class="r"><b>28.8</b></td></tr>
+  </table>
+  <p><b>What this taught us.</b> Out of the box, the model already finds the right person first 40% of the time among 1,000 photos, which is a real but modest skill. Searching the <i>whole</i> dataset (20,505 photos) drops Rank-1 to 10%. Re-running with random galleries of growing size showed why: Rank-1 falls steadily from 46% at 250 photos to 10% at 20,505. The task gets harder with more people to confuse, not because some photos are worse.</p>
+  <div class="simple"><div class="t">Why this order</div>Measuring first fixes a fair reference point, with the same split, the same metrics and the same code. Every later number is compared to it.</div>
+</section>
+
+<section class="chapter">
+  <div class="kicker">05 · The grades</div>
+  <h2>Rank-1, Rank-5, mAP, mINP, without the maths</h2>
+  <table>
+    <tr><th>Grade</th><th>Question it answers</th><th>Plain example</th></tr>
+    <tr><td><b>Rank-1</b></td><td>Is the first photo the right person?</td><td>The guard points once. Right or wrong?</td></tr>
+    <tr><td><b>Rank-5 / Rank-10</b></td><td>Is the right person among the first 5 / 10?</td><td>The guard shows a short list, and the parent spots their child.</td></tr>
+    <tr><td><b>mAP</b></td><td>Are <i>all</i> photos of that person near the top?</td><td>Not just one sighting: every camera that saw them.</td></tr>
+    <tr><td><b>mINP</b></td><td>How deep is the <i>hardest</i> photo of that person?</td><td>The one blurry, dark sighting. Is it still found?</td></tr>
+  </table>
+  <p>The test runs each of the 2,000 test descriptions against the 1,000 test photos (<b>protocol A</b>). Every grade is an average over those 2,000 searches. All grading code lives in one shared file, <code>tbpr.py</code>, so the zero-shot and fine-tuned notebooks are graded in exactly the same way.</p>
+  <div class="simple"><div class="t">Why several grades?</div>One number hides things. A model can be good at the first guess (Rank-1) but leave the person's other photos buried (low mAP). Reporting all of them shows both.</div>
+</section>
+
+<section class="chapter">
+  <div class="kicker">06 · Step 2 · <i>when:</i> after the baseline · <code>TBPR_finetune.ipynb</code></div>
+  <h2>Fine-tuning: teach the model what matters for people</h2>
+  <p class="lede">The original model learned from general images and text on the internet. It has never been told that “dark red hooded top” and a blurry street crop of a red coat are the same person. Fine-tuning shows it 37,010 examples of exactly that.</p>
+  <div class="simple"><div class="t">In simple words · fine-tuning</div>Fine-tuning is extra practice on one specific job. The model keeps everything it already knows, and its numbers are nudged a little at a time until it gets better at this job.</div>
+  <figure><img src="../diagrams/fig4_training.png" alt=""><figcaption>Figure 4. One training step (a), the batch rule (b), nested vector sizes (c), the recipe (d) and the validation curve (e).</figcaption></figure>
+  <h3>The loss: a multiple-choice test, taken both ways</h3>
+  <p>Each step takes 128 (sentence, photo) pairs. For each sentence, the correct photo is the one it was written for, and the other 127 photos are wrong answers. The model is rewarded for giving the right pair the highest score in its row. The same test is then run the other way: each photo must pick its sentence. This is <b>contrastive learning</b>, using <code>CachedMultipleNegativesRankingLoss</code>.</p>
+  <ul>
+    <li><b>Why 128 pairs?</b> More wrong answers per question make a harder, more useful test.</li>
+    <li><b>Why “cached”?</b> 128 images at once do not fit in 24 GB of GPU memory. The cached version computes them 16 at a time and combines the results, which gives the same maths with less memory.</li>
+    <li><b>Why both directions?</b> Search goes text to image, but training image to text as well makes the shared space more balanced.</li>
+  </ul>
+  <h3>The batch rule: never two photos of the same person</h3>
+  <p>Each person has about five photos. In a random batch of 128, the same person sometimes appears twice, and the loss would then call a <i>correct</i> match “wrong”. A small custom sampler, <code>UniquePersonBatchSampler</code>, builds every batch from 128 <i>different</i> people. <b>Why it matters:</b> without it the model would be punished for being right, which slowly teaches it the wrong thing.</p>
+  <h3>Matryoshka: one vector, four sizes</h3>
+  <p>The loss is also applied to the first 512, 256 and 128 numbers of each vector on their own (<code>MatryoshkaLoss</code>). The model learns to put the most useful information first, like Russian nesting dolls. <b>Why:</b> a 256-number index is 3× smaller and faster, and after fine-tuning it loses only about one Rank-1 point.</p>
+  <h3>Settings, and the reason for each</h3>
+  <table>
+    <tr><th>Setting</th><th>Value</th><th>Why</th></tr>
+    <tr><td>learning rate</td><td>2e-5</td><td>Small steps, so the model improves at this task without forgetting what it already knows.</td></tr>
+    <tr><td>warm-up</td><td>first 10% of steps</td><td>Starts even gentler, because the first updates are the noisiest.</td></tr>
+    <tr><td>epochs</td><td>3 (≈ 33 min each)</td><td>The validation grade stops improving after epoch 1, so more epochs would only waste time.</td></tr>
+    <tr><td>model selection</td><td>best val mAP</td><td>The test set is never used to choose, so the final grade stays honest.</td></tr>
+    <tr><td>GPU memory</td><td>≈ 18 GB</td><td>It fits on one RTX 3090 (24 GB).</td></tr>
+  </table>
+</section>
+
+<section class="chapter">
+  <div class="kicker">07 · Step 3 · <i>when:</i> after training, once</div>
+  <h2>The results</h2>
+  <figure><img src="../diagrams/fig6_results.png" alt=""><figcaption>Figure 6. Every grade on the 200 unseen test people, before and after fine-tuning.</figcaption></figure>
+  <p>Fine-tuning nearly doubles every grade. <b>678</b> test searches moved up to first place, and 51 dropped out of it. The right person is now in the top 10 for 93% of searches.</p>
+  <figure><img src="../diagrams/fig3_space.png" alt=""><figcaption>Figure 3. Real embeddings of six unseen people, squashed to 2-D. Fine-tuning moves each sentence onto its person.</figcaption></figure>
+  <p><b>Why it works, in one picture:</b> before training, a sentence was about equally close to everyone (0.73 to its own person, 0.66 to others). After training, the gap is wide (0.51 against 0.12). That wide gap is what lets a single threshold separate the right person from the crowd in video later.</p>
+  <figure><img src="../../outputs/finetuned/examples_before_after.png" alt=""><figcaption>Searches the original model got wrong at first place and the fine-tuned model gets right. Aqua frame: correct person.</figcaption></figure>
+</section>
+
+<section class="chapter">
+  <div class="kicker">08 · Step 4 · <i>when:</i> after the model is final · <code>demo/server.py</code></div>
+  <h2>The image-search website</h2>
+  <p>A small web server, written with Python's built-in HTTP library and no web framework, loads the fine-tuned model and the pre-computed photo embeddings. When you type a sentence, it encodes only that sentence (a few milliseconds), scores it against all photos with one matrix multiplication on the GPU, and returns the top 5.</p>
+  <ul>
+    <li><b>Why pre-compute the photos?</b> Encoding 20,505 photos takes minutes, while encoding one sentence takes milliseconds. Doing the slow part once makes every search instant.</li>
+    <li><b>Why must the file match the model?</b> Embeddings from two different models live on two different “maps”. Mixing them would compare GPS coordinates from two different planets.</li>
+    <li><b>Why only known image names are served:</b> the server never reads a file path the browser invents, so nobody can ask it for files outside the dataset.</li>
+  </ul>
+  <pre>GET  /api/example          a random test description and its person id
+POST /api/search           {query, gallery: "test" | "all"}  →  top-5 photos + scores
+GET  /imgs/&lt;name&gt;          only names that exist in the dataset</pre>
+</section>
+
+<section class="chapter">
+  <div class="kicker">09 · Step 5 · <i>when:</i> after search worked · <code>demo/track_person.py</code></div>
+  <h2>Live video: from a frame to one green box</h2>
+  <p class="lede">The model only understands photos of single people. Video is turned into exactly that: a stream of single-person photos.</p>
+  <figure><img src="../diagrams/fig5_video.png" alt=""><figcaption>Figure 5. The five stages, with the tracker's real output for one frame of the Mall dataset.</figcaption></figure>
+  <table>
+    <tr><th>Stage</th><th>What</th><th>Why this choice</th></tr>
+    <tr><td>Detect</td><td>YOLO26s, “person” class only</td><td>Small and fast, and it finds where people are so that the language model only looks at people.</td></tr>
+    <tr><td>Track</td><td>ByteTrack gives each person an id</td><td>A person keeps their id across frames, so evidence collected over time is not thrown away.</td></tr>
+    <tr><td>Re-encode</td><td>each track every 10 frames, in one GPU batch</td><td>The person rarely changes in a third of a second. This saves about 90% of the work.</td></tr>
+    <tr><td>Smooth</td><td>EMA: <code>e ← 0.7·e + 0.3·new</code></td><td>One blurry crop cannot flip the decision, because the track keeps a running memory.</td></tr>
+    <tr><td>Gate 1</td><td>score ≥ 0.45</td><td>The right person scored 0.45–0.76, while strangers peaked at 0.40–0.42 when that person was absent. Below 0.45, no one gets the box.</td></tr>
+    <tr><td>Gate 2</td><td>box height ÷ width ≥ 1.2</td><td>Training photos are full bodies. Head-only boxes and boxes covering two people score unreliably, so they can never win.</td></tr>
+  </table>
+  <div class="simple"><div class="t">In simple words · EMA</div>An exponential moving average is a memory with fading weight. Every new look counts for 30%, and everything seen before counts for 70%. Recent looks matter most, but no single look can take over.</div>
+  <p><b>Speed.</b> About 26 frames per second end to end on 768×576 video, and 55–100 fps once every track is encoded. In the website, a background thread plays the video in real time and skips frames if it falls behind, so the video never slows down. A new sentence takes effect on the very next frame, about 150 ms after the click.</p>
+</section>
+
+<section class="chapter">
+  <div class="kicker">10 · Step 6 · <i>when:</i> last, as a stress test · <code>TBPR_mall.ipynb</code></div>
+  <h2>A real crowd: the Mall dataset</h2>
+  <p class="lede">Everything so far was tested on clean, cut-out photos. A shopping mall is the real thing: 13–53 people in each frame, people hiding behind each other, and tiny figures far from the camera.</p>
+  <p>The Mall dataset (Chen et al., BMVC 2012) has 2,000 frames from one camera. A human put a dot on <b>every head</b>, 62,315 dots in total. There are no names or ids, so it can grade one question exactly: <i>does the detector see the people?</i> The frames were also turned into a video, <code>videos/mall.mp4</code>, which plays in the website.</p>
+  <h3>How the detector is graded</h3>
+  <p>Each head dot may be matched to at most one person box, and only if the dot sits in the top 45% of that box. The optimal one-to-one pairing is found with the Hungarian algorithm. Matched dots count as hits, unmatched dots are misses, and unmatched boxes are false alarms.</p>
+  <figure><img src="../../outputs/mall/results_detection.png" alt=""><figcaption>Left: people per frame, labelled against detected. Right: the share of people found at each height in the frame. People near the top of the image are far away and tiny.</figcaption></figure>
+  <table>
+    <tr><th>Detector setting</th><th class="r">Precision</th><th class="r">Recall</th><th class="r">Count error / frame</th></tr>
+    <tr><td>640 px, confidence 0.40 (the demo's default)</td><td class="r">97.7%</td><td class="r">39.0%</td><td class="r">18.7</td></tr>
+    <tr><td>1280 px, confidence 0.25</td><td class="r">92.4%</td><td class="r"><b>66.3%</b></td><td class="r"><b>8.8</b></td></tr>
+  </table>
+  <div class="simple"><div class="t">In simple words · precision and recall</div><b>Precision</b> asks: when the detector says “person”, how often is it right? <b>Recall</b> asks: of all the real people, how many did it find? The demo's detector is almost never wrong, but in a crowd it misses many far-away people.</div>
+  <figure><img src="../../outputs/mall/grounding_examples.png" alt=""><figcaption>Four descriptions of shoppers, the frame where each scored highest, and the boxed crop. All four are the right person.</figcaption></figure>
+  <p><b>What this taught us.</b> The language model transfers to a place it never saw: each description finds its shopper among 20–30 people, with best scores of 0.60–0.72. The weak link in a crowd is the detector, because a person who never gets a box can never be chosen. Doubling the detector's input size to 1280 px finds 70% more people.</p>
+</section>
+
+<section class="chapter">
+  <div class="kicker">11 · Honest limits</div>
+  <h2>What it cannot do yet, and what would come next</h2>
+  <ul>
+    <li><b>Small and hidden people.</b> In dense crowds, about a third of people get no box even at 1280 px. The next step would be a detector trained on crowds, or tiling the frame into overlapping pieces.</li>
+    <li><b>Similar clothes.</b> Two people in red share a neighbourhood in the embedding space (Figure 3b). Details such as “glasses” or “scarf” help, but a vague sentence stays ambiguous.</li>
+    <li><b>Low frame rates.</b> The Mall camera records under 2 frames per second, so ByteTrack often breaks tracks and the EMA memory restarts. Normal 25–30 fps cameras do not have this problem.</li>
+    <li><b>Language.</b> Training used English descriptions only.</li>
+    <li><b>Responsible use.</b> This is a research demo on public research datasets. Searching for real people in real footage needs consent, legal grounds and human review of every match.</li>
+  </ul>
+</section>
+
+<section class="chapter">
+  <div class="kicker">12 · Glossary</div>
+  <h2>Every term, in one line</h2>
+  <dl class="gloss">
+    <dt>Embedding</dt><dd>A list of numbers (here 768) that captures what a text or image means, so similar things get similar lists.</dd>
+    <dt>Cosine similarity</dt><dd>How much two lists point the same way: 1 is the same, 0 is unrelated.</dd>
+    <dt>L2-normalised</dt><dd>Scaled to length 1, so only the direction counts.</dd>
+    <dt>Zero-shot</dt><dd>Used on a task with no practice on it.</dd>
+    <dt>Fine-tuning</dt><dd>Extra training on one specific task, starting from a trained model.</dd>
+    <dt>Contrastive loss</dt><dd>Training by “match the right pair, push away the wrong ones”.</dd>
+    <dt>Batch</dt><dd>The group of examples the model studies in one step (here 128).</dd>
+    <dt>Negative</dt><dd>A wrong answer in the batch that the model should score low.</dd>
+    <dt>Epoch</dt><dd>One full pass over the training data.</dd>
+    <dt>Learning rate</dt><dd>How big each training step is.</dd>
+    <dt>Matryoshka</dt><dd>Training so the first part of a vector works on its own.</dd>
+    <dt>Vision tokens</dt><dd>The small pieces an image is cut into before the model reads it.</dd>
+    <dt>bfloat16</dt><dd>A 16-bit number format: half the memory, nearly the same accuracy.</dd>
+    <dt>Rank-k</dt><dd>Share of searches with the right person in the top k.</dd>
+    <dt>mAP / mINP</dt><dd>How early <i>all</i> / the <i>hardest</i> of a person's photos are found.</dd>
+    <dt>Detector (YOLO)</dt><dd>Finds where people are in a frame and draws boxes.</dd>
+    <dt>Tracker (ByteTrack)</dt><dd>Gives each box a stable id from frame to frame.</dd>
+    <dt>EMA</dt><dd>A running average that favours recent values.</dd>
+    <dt>Precision / recall</dt><dd>How often a detection is right / how many real people are found.</dd>
+    <dt>Hungarian algorithm</dt><dd>Finds the best one-to-one pairing between two sets, here boxes and head dots.</dd>
+  </dl>
+</section>
+
+<section class="chapter">
+  <div class="kicker">13 · Run it yourself</div>
+  <h2>Commands</h2>
+  <pre># 1. measure zero-shot, fine-tune, then stress-test on the mall (each notebook saves its outputs)
+.venv/bin/jupyter execute --inplace TBPR_ex.ipynb
+.venv/bin/jupyter execute --inplace TBPR_finetune.ipynb     # ≈ 18 GB GPU, ≈ 1.7 h
+.venv/bin/jupyter execute --inplace TBPR_mall.ipynb
+
+# 2. the website: image search on /, live video on /video
+.venv/bin/python demo/server.py --port 8000 \
+    --model models/embeddinggemma2-rstpreid --embeddings outputs/finetuned/image_embeddings.npy \
+    --video videos/*.mp4 --video-query "a man in a red and white striped shirt"
+
+# 3. video in a desktop window (type a new sentence in the terminal + Enter)
+.venv/bin/python demo/track_person.py --model models/embeddinggemma2-rstpreid \
+    --source videos/mall.mp4 --query "a woman in a red coat"
+
+# 4. rebuild the figures in docs/diagrams and this PDF
+.venv/bin/python docs/diagrams/render.py
+.venv/bin/python docs/explainer/build_pdf.py</pre>
+</section>
+</body></html>

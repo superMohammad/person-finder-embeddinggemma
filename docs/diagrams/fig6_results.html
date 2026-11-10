@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Figure 6 · Results</title>
+<link rel="stylesheet" href="fig.css">
+<style>
+  .hero { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--line); margin-bottom: 30px; }
+  .hero > div { padding: 16px 18px 16px 0; }
+  .hero b { display: block; font: 500 46px/1 "Newsreader", serif; letter-spacing: -.01em; }
+  .hero .from { font: 13px "IBM Plex Mono"; color: var(--muted); margin-top: 6px; }
+  .hero .what { font-size: 14px; color: var(--ink-2); margin-top: 2px; }
+  .row { display: grid; grid-template-columns: 820px 1fr; gap: 34px; }
+  .p { padding: 18px 20px; }
+  .legend { display: flex; gap: 20px; font-size: 13px; color: var(--ink-2); margin-bottom: 6px; }
+  .sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+  .pair { display: grid; grid-template-columns: 110px 1fr 60px; align-items: center; gap: 10px; margin: 8px 0; font-size: 13.5px; }
+  .pair .bars { display: grid; gap: 3px; }
+  .pair .b { height: 14px; border-radius: 0 3px 3px 0; position: relative; }
+  .pair .b span { position: absolute; left: calc(100% + 6px); top: -2px; font: 12px "IBM Plex Mono"; color: var(--ink-2); white-space: nowrap; }
+  .pair .d { font: 600 13px "IBM Plex Mono"; text-align: right; }
+  .side { display: grid; gap: 24px; align-content: start; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th { text-align: left; font: 500 11px "IBM Plex Mono"; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--ink); }
+  td { padding: 7px 8px; border-bottom: 1px solid var(--hair); }
+  .r { text-align: right; font-family: "IBM Plex Mono"; }
+</style></head>
+<body><div class="fig">
+  <div class="fig-head"><span class="no">Figure 6</span><h1>What fine-tuning bought, and where the limits are</h1><span class="src">protocol A · 2,000 queries × 1,000 photos · 200 unseen people</span></div>
+
+  <div class="hero">
+    <div><b>71.4%</b><div class="from">from 40.1%</div><div class="what">Rank-1: the first photo is the right person</div></div>
+    <div><b>93.2%</b><div class="from">from 75.4%</div><div class="what">Rank-10: the right person is on the first screen</div></div>
+    <div><b>54.8</b><div class="from">from 28.8</div><div class="what">mAP: all of a person's photos found early</div></div>
+    <div><b>3.1×</b><div class="from">9.7 → 29.5 mINP</div><div class="what">the hardest photo is found much higher</div></div>
+  </div>
+
+  <div class="row">
+    <div>
+      <div class="panel-label">(a) <i>zero-shot vs fine-tuned, same 70-token setting</i></div>
+      <div class="box p">
+        <div class="legend"><span><span class="sw" style="background:var(--zs)"></span>zero-shot (original model)</span><span><span class="sw" style="background:var(--ft)"></span>fine-tuned (this project)</span><span style="margin-left:auto" class="mono">gain</span></div>
+        <div id="pairs"></div>
+        <div class="note small" style="margin-top:10px">Pooling val and test (2,000 photos and 400 people) makes the task harder, but the ranking holds: Rank-1 goes from 26.7 to 55.9.</div>
+      </div>
+    </div>
+    <div class="side">
+      <div>
+        <div class="panel-label">(b) <i>fewer image tokens was better, and faster</i></div>
+        <div class="box p">
+          <table>
+            <tr><th>zero-shot, vision tokens</th><th class="r">Rank-1</th><th class="r">mAP</th></tr>
+            <tr><td>280</td><td class="r">35.4</td><td class="r">25.0</td></tr>
+            <tr><td><b>70</b> (used everywhere)</td><td class="r"><b>40.1</b></td><td class="r"><b>28.8</b></td></tr>
+          </table>
+          <div class="note small" style="margin-top:10px">RSTPReid crops are small and blurry, so extra tokens add detail that does not exist. At 70 tokens, each crop also needs 4× fewer image tokens, which helps keep live video fast.</div>
+        </div>
+      </div>
+      <div>
+        <div class="panel-label">(c) <i>a crowd the model never saw: the Mall dataset</i></div>
+        <div class="box p">
+          <table>
+            <tr><th>detector input</th><th class="r">precision</th><th class="r">recall</th><th class="r">count error</th></tr>
+            <tr><td>640 px · conf 0.40 (demo)</td><td class="r">97.7</td><td class="r">39.0</td><td class="r">18.7</td></tr>
+            <tr><td>1280 px · conf 0.25</td><td class="r">92.4</td><td class="r"><b>66.3</b></td><td class="r"><b>8.8</b></td></tr>
+          </table>
+          <div class="note small" style="margin-top:10px">Against 62,315 hand-labelled heads in 2,000 frames. The language side transfers, because each test description scored its shopper 0.60–0.72. The limit is the detector: far-away and partly hidden people get no box, so they cannot be chosen.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="caption"><b>Figure 6.</b> All numbers are from the notebooks in this repository (<span class="mono">outputs/finetuned/results_test.csv</span>, <span class="mono">outputs/results_main.csv</span>, <span class="mono">outputs/mall/results_detection.csv</span>). Fine-tuning on 3,701 people nearly doubles every retrieval grade on 200 people it has never seen. The Mall experiment shows that, in a dense crowd, the next gain will come from the detector rather than from the language model.</div>
+</div>
+<script>
+const M = [["Rank-1", 40.1, 71.4], ["Rank-5", 65.5, 87.3], ["Rank-10", 75.4, 93.2], ["mAP", 28.8, 54.8], ["mINP", 9.7, 29.5]];  // results_test.csv, rounded half up
+document.getElementById("pairs").innerHTML = M.map(([k, z, f]) => `<div class="pair"><span>${k}</span>
+  <div class="bars"><div class="b" style="width:${z * 0.86}%;background:var(--zs)"><span>${z.toFixed(1)}</span></div>
+  <div class="b" style="width:${f * 0.86}%;background:var(--ft)"><span>${f.toFixed(1)}</span></div></div>
+  <span class="d">+${(f - z).toFixed(1)}</span></div>`).join("");
+</script>
+</body></html>

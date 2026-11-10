@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Person Finder · How it works</title>
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/theme.js"></script>
+<style>
+  .cols { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 48px; margin-top: 40px; }
+  .toc { position: sticky; top: 110px; align-self: start; display: grid; gap: 0; border-top: 1px solid var(--rule); }
+  .toc a { display: grid; grid-template-columns: 30px 1fr; padding: 9px 0; border-bottom: 1px solid var(--line); text-decoration: none; font-size: 14px; color: var(--ink-2); }
+  .toc a span { font: 11.5px var(--mono); color: var(--muted); padding-top: 2px; }
+  .toc a:hover { color: var(--ink); }
+  .toc .pdf { margin-top: 18px; border: 1px solid var(--ink); padding: 12px; display: block; text-decoration: none; }
+  .toc .pdf b { display: block; font: 500 17px/1.2 var(--serif); }
+  .toc .pdf span { font: 11.5px var(--mono); color: var(--muted); }
+  .toc .pdf:hover { background: var(--ink); color: var(--paper); }
+  .toc .pdf:hover span { color: var(--paper); }
+  article section { padding-bottom: 46px; margin-bottom: 46px; border-bottom: 1px solid var(--line); scroll-margin-top: 110px; }
+  article section:last-child { border-bottom: 0; }
+  .step { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; align-items: end; margin-bottom: 20px; }
+  .step .no { font: 400 76px/0.85 var(--serif); letter-spacing: -.04em; color: var(--muted); }
+  .step h2 { font: 500 32px/1.1 var(--serif); letter-spacing: -.015em; margin: 8px 0 0; }
+  .step p { margin: 0; font: 400 17.5px/1.55 var(--serif); color: var(--ink-2); }
+  .why { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid var(--rule); margin-bottom: 22px; }
+  .why div { padding: 12px 18px 0 0; font-size: 14px; color: var(--ink-2); }
+  .why b { display: block; font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); margin-bottom: 4px; }
+  figure { margin: 0; }
+  figure a { display: block; border: 1px solid var(--line); background: #f3f0e8; }
+  figure img { display: block; width: 100%; }
+  figcaption { margin-top: 8px; font: 12px var(--mono); color: var(--muted); display: flex; justify-content: space-between; gap: 12px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  @media (max-width: 960px) { .cols { grid-template-columns: 1fr; } .toc { display: none; } .step { grid-template-columns: 1fr; gap: 12px; } .pair { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) { .why { grid-template-columns: 1fr; } .step .no { font-size: 56px; } }
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <a class="mark" href="/"><b>Person Finder</b><span>EmbeddingGemma-2 × RSTPReid</span></a>
+    <nav class="nav"><a href="/">Search</a><a href="/video">Live video</a><a href="/how" aria-current="page">How it works</a></nav>
+    <button id="theme" class="theme" type="button">◑ dark</button>
+  </div>
+</header>
+<div class="ticker"><div class="wrap">
+  <span>6 figures</span><span>every number from the notebooks</span><span>all images are real model outputs</span>
+</div></div>
+
+<main><div class="wrap">
+  <div class="eyebrow">Method · six figures</div>
+  <h1 class="display">One model, <i>two uses,</i> one green box.</h1>
+  <p class="standfirst">The whole project in six figures, from the dataset to a live mall camera. Each step says what was done, and why it was done that way.</p>
+
+  <div class="cols">
+    <nav class="toc" aria-label="Contents">
+      <a href="#overview"><span>01</span>The idea</a>
+      <a href="#data"><span>02</span>Data &amp; grades</a>
+      <a href="#space"><span>03</span>The shared space</a>
+      <a href="#training"><span>04</span>Fine-tuning</a>
+      <a href="#video"><span>05</span>Live video</a>
+      <a href="#results"><span>06</span>Results</a>
+      <a href="#mall"><span>07</span>A real crowd</a>
+      <a class="pdf" href="/docs/Person_Finder_Explained.pdf"><b>Read the full explanation</b><span>PDF · 21 pages · plain words</span></a>
+    </nav>
+
+    <article>
+      <section id="overview">
+        <div class="step"><div><div class="no">01</div><h2>A sentence and a photo become the same kind of thing.</h2></div>
+          <p>EmbeddingGemma-2 turns text <i>and</i> images into 768 numbers. If the numbers point the same way, the sentence describes the photo. Search ranks photos by that score, and video does the same with people cut out of each frame.</p></div>
+        <figure><a href="/figures/fig1_overview.png"><img src="/figures/fig1_overview.png" alt="Figure 1: system overview" loading="lazy"></a><figcaption><span>Figure 1</span><span>open full size ↗</span></figcaption></figure>
+      </section>
+
+      <section id="data">
+        <div class="step"><div><div class="no">02</div><h2>Graded on strangers only.</h2></div>
+          <p>RSTPReid has 4,101 people, 20,505 photos and two sentences per photo. Train, val and test share no person, so the test score measures how well the model finds people it has never seen.</p></div>
+        <div class="why"><div><b>When</b>Before any code was written.</div><div><b>Why by person</b>A shared person would let the model remember a face instead of reading the words.</div><div><b>Why many grades</b>Rank-1 checks the first guess, and mAP checks whether all of that person's photos were found.</div></div>
+        <figure><a href="/figures/fig2_data.png"><img src="/figures/fig2_data.png" alt="Figure 2: data and evaluation" loading="lazy"></a><figcaption><span>Figure 2</span><span>open full size ↗</span></figcaption></figure>
+      </section>
+
+      <section id="space">
+        <div class="step"><div><div class="no">03</div><h2>Fine-tuning opens a gap.</h2></div>
+          <p>Before training, a sentence was almost as close to strangers (0.66) as to its own person (0.73). After training, the gap is 0.12 against 0.51. That gap is what makes a single threshold work in video.</p></div>
+        <figure><a href="/figures/fig3_space.png"><img src="/figures/fig3_space.png" alt="Figure 3: embedding space before and after" loading="lazy"></a><figcaption><span>Figure 3 · real embeddings, PCA to 2-D</span><span>open full size ↗</span></figcaption></figure>
+      </section>
+
+      <section id="training">
+        <div class="step"><div><div class="no">04</div><h2>Match the pairs, push the rest away.</h2></div>
+          <p>Each step is a 128-way multiple-choice test, taken in both directions. Batches never hold two photos of the same person, so a right answer is never marked wrong. Matryoshka training keeps even a 256-number vector useful.</p></div>
+        <div class="why"><div><b>When</b>After the zero-shot baseline was measured.</div><div><b>Why lr 2e-5</b>Small steps learn this task without forgetting everything else.</div><div><b>Why 3 epochs</b>Validation stopped improving after the first one.</div></div>
+        <figure><a href="/figures/fig4_training.png"><img src="/figures/fig4_training.png" alt="Figure 4: fine-tuning" loading="lazy"></a><figcaption><span>Figure 4</span><span>open full size ↗</span></figcaption></figure>
+      </section>
+
+      <section id="video">
+        <div class="step"><div><div class="no">05</div><h2>Video is a stream of person photos.</h2></div>
+          <p>YOLO finds people, ByteTrack keeps their ids, and each crop is re-encoded every 10 frames and averaged over time. The best person wins only with a score of at least 0.45 and a full-body box shape.</p></div>
+        <figure><a href="/figures/fig5_video.png"><img src="/figures/fig5_video.png" alt="Figure 5: live video pipeline" loading="lazy"></a><figcaption><span>Figure 5 · Mall dataset, frame 790</span><span>open full size ↗</span></figcaption></figure>
+      </section>
+
+      <section id="results">
+        <div class="step"><div><div class="no">06</div><h2>40% → 71% first-guess accuracy.</h2></div>
+          <p>The same test, the same code, 200 people the model never trained on. Every grade nearly doubles, and the right person is in the top 10 for 93% of searches.</p></div>
+        <figure><a href="/figures/fig6_results.png"><img src="/figures/fig6_results.png" alt="Figure 6: results" loading="lazy"></a><figcaption><span>Figure 6</span><span>open full size ↗</span></figcaption></figure>
+      </section>
+
+      <section id="mall">
+        <div class="step"><div><div class="no">07</div><h2>Out in a real mall.</h2></div>
+          <p>Mall dataset: 2,000 frames and 62,315 hand-marked heads. The language side transfers, scoring each described shopper 0.60–0.72. The detector is the limit: at 640 px it finds 39% of people in the crowd, and at 1280 px it finds 66%.</p></div>
+        <div class="pair">
+          <figure><a href="/figures/mall_grounding.png"><img src="/figures/mall_grounding.png" alt="Four Mall descriptions and the boxed shopper" loading="lazy"></a><figcaption><span>Four descriptions, four right shoppers</span><span>↗</span></figcaption></figure>
+          <figure><a href="/figures/mall_detection.png"><img src="/figures/mall_detection.png" alt="Detection recall on the Mall dataset" loading="lazy"></a><figcaption><span>People found vs labelled</span><span>↗</span></figcaption></figure>
+        </div>
+      </section>
+    </article>
+  </div>
+</div></main>
+
+<footer class="foot"><div class="wrap">
+  <span>Notebooks: TBPR_ex · TBPR_finetune · TBPR_mall</span>
+  <span class="spacer"></span><a href="/">Search</a><a href="/video">Live video</a><a href="/docs/Person_Finder_Explained.pdf">Full explanation (PDF)</a>
+</div></footer>
+</body>
+</html>

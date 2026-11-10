@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Figure 2 · Data and evaluation</title>
+<link rel="stylesheet" href="fig.css">
+<style>
+  .row { display: grid; grid-template-columns: 640px 1fr; gap: 40px; }
+  .p { padding: 18px 20px 20px; }
+  .cams { display: flex; gap: 12px; margin-top: 12px; }
+  .cams figure { margin: 0; }
+  .cams figcaption { font: 11.5px "IBM Plex Mono"; color: var(--ink-2); margin-top: 5px; text-align: center; }
+  .cams .person { width: 96px; height: 192px; }
+  .caps { margin-top: 16px; display: grid; gap: 10px; }
+  .cap-line { display: grid; grid-template-columns: 26px 1fr; gap: 8px; }
+  .cap-line .n { font: 600 12px "IBM Plex Mono"; color: var(--muted); padding-top: 3px; }
+  .cap-line .quote { font-size: 16.5px; }
+  .bar { display: flex; height: 46px; margin-top: 14px; gap: 2px; }
+  .bar div { display: flex; align-items: center; padding: 0 12px; font: 500 13px "IBM Plex Mono"; color: var(--paper); }
+  .scale { display: flex; justify-content: space-between; font: 11.5px "IBM Plex Mono"; color: var(--muted); margin-top: 6px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 14px; font-size: 14px; }
+  th { text-align: left; font: 500 11px "IBM Plex Mono"; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 6px 10px; border-bottom: 1px solid var(--ink); }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--hair); }
+  td.r, th.r { text-align: right; font-family: "IBM Plex Mono"; }
+  .metric { display: grid; grid-template-columns: 300px 1fr; gap: 22px; align-items: center; padding: 14px 0; border-top: 1px solid var(--hair); }
+  .metric:first-of-type { border-top: 0; }
+  .metric h3 { margin: 0; font: 500 21px "Newsreader", serif; }
+  .metric .note { margin-top: 4px; }
+  .strip { display: flex; gap: 6px; align-items: flex-end; }
+  .strip .slot { width: 40px; height: 80px; border: 1px solid var(--line); background: var(--soft); position: relative; }
+  .strip .slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .strip .slot.ok { outline: 2.5px solid var(--match); outline-offset: 1px; }
+  .strip .rk { font: 11px "IBM Plex Mono"; color: var(--muted); text-align: center; margin-top: 3px; }
+  .strip .val { font: 13px/1.4 "IBM Plex Sans"; color: var(--ink-2); margin-left: 14px; align-self: center; max-width: 170px; }
+</style></head>
+<body><div class="fig">
+  <div class="fig-head"><span class="no">Figure 2</span><h1>What the model learns from, and how it is graded</h1><span class="src">RSTPReid · 20,505 photos · 4,101 people</span></div>
+
+  <div class="row">
+    <div style="display:grid;gap:26px;align-content:start">
+      <div>
+        <div class="panel-label">(a) <i>one person, five cameras, two descriptions per photo</i></div>
+        <div class="box p">
+          <div class="cams">
+            <figure><img class="person" src="assets/3920_c1_0001.jpg"><figcaption>cam 1</figcaption></figure>
+            <figure><img class="person" src="assets/3920_c5_0008.jpg"><figcaption>cam 5</figcaption></figure>
+            <figure><img class="person" src="assets/3920_c7_0005.jpg" style="outline:2px solid var(--ink);outline-offset:1px"><figcaption>cam 7</figcaption></figure>
+            <figure><img class="person" src="assets/3920_c14_0015.jpg"><figcaption>cam 14</figcaption></figure>
+            <figure><img class="person" src="assets/3920_c15_0022.jpg"><figcaption>cam 15</figcaption></figure>
+          </div>
+          <div class="kicker" style="margin-top:18px">Written for the cam 7 photo</div>
+          <div class="caps">
+            <div class="cap-line"><span class="n">#1</span><span class="quote">“The man is wearing a red coat, black trousers and black shoes. He is wearing glasses. He was looking at his cell phone when he was walking.”</span></div>
+            <div class="cap-line"><span class="n">#2</span><span class="quote">“The man is wearing a dark red top with the hood. He wears black pants and a pair of black sneakers …”</span></div>
+          </div>
+          <div class="note" style="margin-top:14px">The same coat looks red, dark red or almost black depending on the camera and the light. The model has to learn that these are one person.</div>
+        </div>
+      </div>
+      <div>
+        <div class="panel-label">(d) <i>two test protocols, and when each is fair</i></div>
+        <div class="box p">
+          <table style="margin-top:0">
+            <tr><th>Protocol</th><th class="r">Queries</th><th class="r">Gallery</th><th>Valid for</th></tr>
+            <tr><td><b>A · test split</b></td><td class="r">2,000</td><td class="r">1,000</td><td>every model. This is the headline number</td></tr>
+            <tr><td>B · whole dataset</td><td class="r">41,010</td><td class="r">20,505</td><td>zero-shot only</td></tr>
+          </table>
+          <div class="note" style="margin-top:12px">After fine-tuning, protocol B would include photos that the model trained on, so it would grade the model on its own homework. Fine-tuned results therefore use only test, or val and test pooled.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;gap:26px;align-content:start">
+      <div>
+        <div class="panel-label">(b) <i>split by person, so no one in the test set is ever seen in training</i></div>
+        <div class="box p">
+          <div class="bar">
+            <div style="flex:3701;background:var(--ink)">train · 3,701 people · 18,505 photos</div>
+            <div style="flex:200;background:#6e6a61;padding:0;justify-content:center">val</div>
+            <div style="flex:200;background:var(--ft);padding:0;justify-content:center">test</div>
+          </div>
+          <div class="scale"><span>0</span><span>person ids</span><span>4,101</span></div>
+          <table>
+            <tr><th>Split</th><th class="r">People</th><th class="r">Photos</th><th class="r">Descriptions</th><th>Used for</th></tr>
+            <tr><td>train</td><td class="r">3,701</td><td class="r">18,505</td><td class="r">37,010</td><td>learning (fine-tuning)</td></tr>
+            <tr><td>val</td><td class="r">200</td><td class="r">1,000</td><td class="r">2,000</td><td>choosing the best checkpoint</td></tr>
+            <tr><td><b>test</b></td><td class="r"><b>200</b></td><td class="r"><b>1,000</b></td><td class="r"><b>2,000</b></td><td><b>the reported numbers (protocol A)</b></td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel-label">(c) <i>the grades, in plain words</i></div>
+        <div class="box p">
+          <div class="metric">
+            <div><h3>Rank-1</h3><div class="note">Is the very first photo the right person?</div></div>
+            <div class="strip">
+              <div><div class="slot ok"><img src="assets/3920_c1_0001.jpg"></div><div class="rk">1</div></div>
+              <div><div class="slot"><img src="assets/3946_c7_0005.jpg"></div><div class="rk">2</div></div>
+              <div><div class="slot"><img src="assets/4039_c14_0000.jpg"></div><div class="rk">3</div></div>
+              <div><div class="slot"><img src="assets/4040_c14_0000.jpg"></div><div class="rk">4</div></div>
+              <div><div class="slot"><img src="assets/4052_c14_0002.jpg"></div><div class="rk">5</div></div>
+              <span class="val">hit → 1, miss → 0, averaged over 2,000 queries</span>
+            </div>
+          </div>
+          <div class="metric">
+            <div><h3>Rank-5 / Rank-10</h3><div class="note">Is the right person anywhere in the first 5 (or 10)?</div></div>
+            <div class="note">More forgiving than Rank-1. This is what a human scanning a short list would see.</div>
+          </div>
+          <div class="metric">
+            <div><h3>mAP</h3><div class="note">Are <i>all</i> five photos of the person near the top?</div></div>
+            <div class="strip">
+              <div><div class="slot ok"><img src="assets/3920_c1_0001.jpg"></div><div class="rk">1</div></div>
+              <div><div class="slot ok"><img src="assets/3920_c14_0015.jpg"></div><div class="rk">2</div></div>
+              <div><div class="slot ok"><img src="assets/3920_c7_0005.jpg"></div><div class="rk">3</div></div>
+              <div><div class="slot ok"><img src="assets/3920_c15_0022.jpg"></div><div class="rk">4</div></div>
+              <div><div class="slot"><img src="assets/3946_c7_0005.jpg"></div><div class="rk">5</div></div>
+              <span class="val">rewards finding every photo early</span>
+            </div>
+          </div>
+          <div class="metric">
+            <div><h3>mINP</h3><div class="note">How far down is the <i>hardest</i> photo of the person?</div></div>
+            <div class="note">The strictest grade: one photo buried at rank 400 pulls it down even when the first four are perfect.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="caption"><b>Figure 2.</b> <b>(a)</b> RSTPReid gives every photo two English descriptions written by different people, and every person is seen by about five cameras. <b>(b)</b> The splits do not share any person, so test scores measure how well the model handles strangers rather than how well it remembers training people. <b>(c)</b> Each of the 2,000 test descriptions searches all 1,000 test photos. Rank-<i>k</i> asks "was the right person in the top <i>k</i>?". mAP and mINP also ask how many of that person's photos were found, and how deep the last one was buried.</div>
+</div></body></html>

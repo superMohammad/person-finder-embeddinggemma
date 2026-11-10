@@ -1,0 +1,22 @@
+{
+  "name": "person-finder-promo",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Remotion source of the README video for Person Finder",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts PersonFinder out/person-finder.mp4 && cp out/person-finder.mp4 ../docs/media/person-finder.mp4",
+    "gif": "ffmpeg -y -i out/person-finder.mp4 -vf \"fps=12,scale=800:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle\" ../docs/media/person-finder.gif"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.399",
+    "@remotion/google-fonts": "4.0.399",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.399"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}

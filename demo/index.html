@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Person Finder · Search</title>
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/theme.js"></script>
+<style>
+  .tries { margin-top: 26px; display: grid; gap: 0; border-top: 1px solid var(--line); }
+  .try { display: grid; grid-template-columns: 56px 1fr auto; align-items: baseline; gap: 0; padding: 12px 0; border-bottom: 1px solid var(--line);
+         background: none; border-left: 0; border-right: 0; border-top: 0; text-align: left; cursor: pointer; color: var(--ink); font: inherit; }
+  .try .n { font: 12px var(--mono); color: var(--muted); }
+  .try .t { font: italic 400 19px/1.35 var(--serif); color: var(--ink-2); }
+  .try .go { font: 12px var(--mono); color: var(--muted); }
+  .try:hover .t { color: var(--ink); }
+  .try:hover .go { color: var(--ink); }
+
+  .lead { display: grid; grid-template-columns: 260px 1fr; gap: 36px; }
+  .lead-img { position: relative; }
+  .lead-img img { width: 100%; aspect-ratio: 1 / 2; object-fit: cover; display: block; background: var(--paper-2); border: 1px solid var(--line); }
+  .lead-img.same img { outline: 3px solid var(--match); outline-offset: 3px; }
+  .numeral { font: 400 92px/0.9 var(--serif); letter-spacing: -.04em; }
+  .score-row { display: flex; align-items: baseline; gap: 14px; margin-top: 8px; }
+  .score-row b { font: 500 34px var(--mono); letter-spacing: -.02em; }
+  .facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 24px; }
+  .quotes { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+  .quotes li { padding: 14px 0; border-bottom: 1px solid var(--line); font: 400 18px/1.45 var(--serif); color: var(--ink-2); }
+  .quotes li::before { content: "“"; font-style: italic; color: var(--muted); margin-right: 2px; }
+  .quotes li::after { content: "”"; color: var(--muted); }
+
+  .sheet { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 22px; }
+  .frame { margin: 0; }
+  .frame .ph { position: relative; }
+  .frame img { width: 100%; aspect-ratio: 1 / 2; object-fit: cover; display: block; background: var(--paper-2); border: 1px solid var(--line); }
+  .frame.same img { outline: 2.5px solid var(--match); outline-offset: 2px; }
+  .frame .no { position: absolute; left: 0; top: 0; font: 500 12px var(--mono); background: var(--ink); color: var(--paper); padding: 3px 7px; }
+  .frame figcaption { margin-top: 10px; display: grid; gap: 7px; }
+  .frame .line { display: flex; justify-content: space-between; font: 12.5px var(--mono); color: var(--ink-2); }
+  .meter { height: 2px; background: var(--hair); }
+  .meter span { display: block; height: 100%; background: var(--ink); }
+  .frame.same .meter span { background: var(--match); }
+  .frame .cap { font: italic 14.5px/1.4 var(--serif); color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+  @media (max-width: 960px) { .sheet { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 640px) {
+    .sheet { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .lead { grid-template-columns: 1fr; } .lead-img { max-width: 220px; }
+    .try { grid-template-columns: 30px 1fr; } .try .go { display: none; }
+  }
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <a class="mark" href="/"><b>Person Finder</b><span>EmbeddingGemma-2 × RSTPReid</span></a>
+    <nav class="nav"><a href="/" aria-current="page">Search</a><a href="/video">Live video</a><a href="/how">How it works</a></nav>
+    <button id="theme" class="theme" type="button">◑ dark</button>
+  </div>
+</header>
+<div class="ticker"><div class="wrap">
+  <span>Rank-1 <b>71.4%</b> on 200 unseen people</span><span>Rank-10 <b>93.2%</b></span><span>zero-shot was <b>40.1%</b></span><span>768-d · 70 vision tokens · bf16</span>
+</div></div>
+
+<main><div class="wrap">
+  <div class="eyebrow">Image search · text → photo</div>
+  <h1 class="display">Who are you <i>looking for?</i></h1>
+  <p class="standfirst">Describe someone in plain English, such as their clothes, colours, hair or what they carry. Every photo in the gallery is ranked by how well it fits, and the best one comes first.</p>
+
+  <div class="field"><span class="q">“</span>
+    <textarea id="query" aria-label="Description" placeholder="A woman with long black hair wearing a white coat, blue jeans and white shoes, carrying a black bag."></textarea>
+  </div>
+  <div class="bar">
+    <div class="switch" role="radiogroup" aria-label="Gallery">
+      <input type="radio" name="gallery" id="g-test" value="test" checked><label for="g-test">Test · 1,000 photos</label>
+      <input type="radio" name="gallery" id="g-all" value="all"><label for="g-all">All · 20,505</label>
+    </div>
+    <span class="spacer"></span>
+    <span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
+    <button id="example" class="btn" title="Fill in a random description from the test split">Random example</button>
+    <button id="search" class="btn btn-solid">Search</button>
+  </div>
+  <div id="status" class="status"></div>
+  <div id="error" class="alert" hidden></div>
+
+  <section id="tries">
+    <div class="tries">
+      <button class="try"><span class="n">01</span><span class="t">A man wearing a red jacket, black trousers and black shoes.</span><span class="go">search →</span></button>
+      <button class="try"><span class="n">02</span><span class="t">A woman in a light blue down jacket with long black hair and a pink bag strap.</span><span class="go">search →</span></button>
+      <button class="try"><span class="n">03</span><span class="t">A young man with a green and grey backpack, dark jacket and blue jeans.</span><span class="go">search →</span></button>
+    </div>
+  </section>
+
+  <section id="results" hidden>
+    <div class="section-head"><h2>The closest match</h2><span class="eyebrow" id="meta"></span></div>
+    <div id="best" class="lead"></div>
+    <div class="section-head"><h2>Top five</h2><span class="eyebrow">Ranked by cosine similarity</span></div>
+    <div id="top5" class="sheet"></div>
+  </section>
+</div></main>
+
+<footer class="foot"><div class="wrap">
+  <span>RSTPReid photos are research data. Do not search for real people without consent.</span>
+  <span class="spacer"></span><a href="/how">Method</a><a href="/docs/Person_Finder_Explained.pdf">Full explanation (PDF)</a>
+</div></footer>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let examplePid = null;   // person id of the random example, to mark correct hits
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+function verdict(h) {
+  if (examplePid === null) return "";
+  return h.pid === examplePid ? `<span class="tag good">same person</span>` : `<span class="tag bad">other person</span>`;
+}
+
+function render(res) {
+  const [best] = res.hits;
+  const top = best.score;
+  const same = (h) => examplePid !== null && h.pid === examplePid;
+  $("best").innerHTML = `
+    <div class="lead-img${same(best) ? " same" : ""}"><img src="/imgs/${best.img}" alt="Best match"></div>
+    <div>
+      <div class="numeral">01</div>
+      <div class="score-row"><b>${best.score.toFixed(3)}</b><span class="hint">cosine similarity to your sentence</span></div>
+      <div class="facts">
+        <span class="tag">person ${best.pid}</span><span class="tag">${best.split} split</span><span class="tag">${best.img}</span>${verdict(best)}
+      </div>
+      <div class="eyebrow" style="margin-bottom:6px">How the dataset describes this photo</div>
+      <ul class="quotes">${best.captions.map((c) => `<li>${escapeHtml(c)}</li>`).join("")}</ul>
+    </div>`;
+  $("top5").innerHTML = res.hits.map((h) => `
+    <figure class="frame${same(h) ? " same" : ""}">
+      <div class="ph"><img src="/imgs/${h.img}" alt="Rank ${h.rank}" loading="lazy"><span class="no">${String(h.rank).padStart(2, "0")}</span></div>
+      <figcaption>
+        <div class="line"><span>${h.score.toFixed(3)}</span><span>id ${h.pid}</span></div>
+        <div class="meter"><span style="width:${Math.max(4, Math.round(100 * h.score / top))}%"></span></div>
+        ${verdict(h)}
+        <div class="cap">${escapeHtml(h.captions[0])}</div>
+      </figcaption>
+    </figure>`).join("");
+  $("results").hidden = false;
+  $("tries").hidden = true;
+  const truth = examplePid === null ? "" : ` · true person ${examplePid}`;
+  $("meta").textContent = `${res.gallery_size.toLocaleString()} photos searched${truth}`;
+  $("status").textContent = `model: ${res.model}`;
+}
+
+async function search() {
+  const query = $("query").value.trim();
+  if (!query) { $("status").textContent = "Type a description first."; return; }
+  $("search").disabled = true; $("error").hidden = true; $("status").textContent = "Searching…";
+  try {
+    const gallery = document.querySelector('input[name="gallery"]:checked').value;
+    const r = await fetch("/api/search", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query, gallery }),
+    });
+    const body = await r.json();
+    if (!r.ok) throw new Error(`${r.status}: ${body.error}`);
+    render(body);
+  } catch (e) {
+    const hint = e instanceof TypeError
+      ? " — the server is not reachable. Start it with `.venv/bin/python demo/server.py --model … --embeddings …` and open http://127.0.0.1:8000 (not the HTML file directly)."
+      : "";
+    $("error").textContent = `Search failed — ${e.message}${hint}`; $("error").hidden = false; $("status").textContent = "";
+  } finally {
+    $("search").disabled = false;
+  }
+}
+
+async function example() {
+  const r = await fetch("/api/example");
+  const body = await r.json();
+  $("query").value = body.caption;
+  examplePid = body.pid;
+  $("status").textContent = `Random description of person ${body.pid}. Photos of that person are marked “same person”.`;
+}
+
+$("search").addEventListener("click", search);
+$("example").addEventListener("click", example);
+$("query").addEventListener("input", () => { examplePid = null; });
+$("query").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) search(); });
+$("tries").addEventListener("click", (e) => {
+  const btn = e.target.closest(".try");
+  if (!btn) return;
+  $("query").value = btn.querySelector(".t").textContent;
+  examplePid = null;
+  search();
+});
+</script>
+</body>
+</html>
